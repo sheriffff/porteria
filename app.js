@@ -11,7 +11,8 @@ const SCALES = {
 };
 const AMOUNTS = [1, 2, 5, 10];
 const DEFAULT_AMOUNT = 1;
-const SECTIONS = ['Matemáticas', 'Programación', 'Economía', 'Ciencia', 'Cotidianas', 'Generalidad'];
+const SECTIONS = ['Matemáticas', 'Ciencia', 'Generalidad'];
+const TABS = [{ key: 'yesno', label: 'sí/no' }, { key: 'year', label: 'timeline' }, { key: 'otras', label: 'otras' }];
 const EMOJIS = ['👍', '😂', '🤔', '🔥', '🙄'];
 
 const state = {
@@ -21,7 +22,7 @@ const state = {
   reactions: [],
   flags: [],
   me: null,
-  filter: 'todas',
+  tab: 'yesno',
   openForm: null,
   openPropose: false,
   draft: null,
@@ -54,6 +55,7 @@ const el = (tag, attrs = {}, ...kids) => {
 
 const uid = () => crypto.randomUUID();
 const scaleOf = (question) => SCALES[question.kind];
+const inTab = (tab, q) => tab === 'yesno' ? q.kind === 'yesno' : tab === 'year' ? q.kind === 'year' : (q.kind !== 'yesno' && q.kind !== 'year');
 const numPct = (scale, v) => v === scale.beyond
   ? 100
   : ((Math.max(scale.min, Math.min(scale.max, Number(v))) - scale.min) / (scale.max - scale.min)) * 88;
@@ -77,6 +79,11 @@ function betLine(question, value, amount) {
     return `Pongo ${n}€ a que no pasa antes de 2050, contra 1€ de quien diga que sí.`;
   }
   return `Pongo ${n}€ a que pasa antes de que acabe ${value}, contra 1€ de quien diga que no.`;
+}
+
+function valueLabel(question, value) {
+  if (question.kind === 'gap') return value === SCALES.gap.beyond ? '> 20 años' : `${value} años`;
+  return value === SCALES.year.beyond ? '> 2050' : String(value);
 }
 
 const session = {
@@ -212,8 +219,8 @@ function renderAnswers(question) {
     return el('div', { class: 'answer' },
       el('div', { class: 'answer-head' },
         el('strong', {}, a.player),
-        el('span', { class: 'bet' }, betLine(question, a.value, a.ratio)),
-        el('span', { class: 'prob' }, implied(a.ratio) + '%')),
+        el('span', { class: 'bet' }, question.kind === 'yesno' ? betLine(question, a.value, a.ratio) : valueLabel(question, a.value)),
+        question.kind === 'yesno' ? el('span', { class: 'prob' }, implied(a.ratio) + '%') : null),
       a.comment ? el('p', { class: 'comment' }, a.comment) : null,
       a.change_mind
         ? el('p', { class: 'change' }, el('span', {}, 'Cambiaría de opinión si'), ' ' + a.change_mind)
@@ -232,6 +239,7 @@ function renderAnswers(question) {
 function renderForm(question) {
   const d = state.draft;
   const update = (patch) => { Object.assign(d, patch); render(); };
+  const isBet = question.kind === 'yesno';
   const betNode = el('p', { class: 'bet-line' }, betLine(question, d.value, d.ratio));
   const refreshBet = () => { betNode.textContent = betLine(question, d.value, d.ratio); };
 
@@ -247,14 +255,14 @@ function renderForm(question) {
         type: 'text', inputMode: 'numeric', maxLength: 4, class: 'inline-num',
         placeholder: question.kind === 'gap' ? 'años' : 'año',
         value: isBeyond ? '' : d.value,
-        oninput: (e) => { e.target.value = e.target.value.replace(/\D/g, ''); d.value = e.target.value; refreshBet(); },
+        oninput: (e) => { e.target.value = e.target.value.replace(/\D/g, ''); d.value = e.target.value; },
         onchange: () => render()
       }),
       el('button', { class: 'opt never' + (isBeyond ? ' on' : ''), onclick: () => update({ value: scale.beyond }) }, scale.beyond)
     ];
   }
 
-  const amountOptions = [
+  const amountOptions = isBet ? [
     ...AMOUNTS.map((n) =>
       el('button', { class: 'opt' + (Number(d.ratio) === n ? ' on' : ''), onclick: () => update({ ratio: n }) }, n + '€')),
     el('input', {
@@ -264,14 +272,14 @@ function renderForm(question) {
       oninput: (e) => { e.target.value = e.target.value.replace(/\D/g, ''); d.ratio = Number(e.target.value || 0); refreshBet(); },
       onchange: () => render()
     })
-  ];
+  ] : null;
 
   return el('div', { class: 'form' },
     el('label', { class: 'label' }, question.kind === 'yesno' ? 'Tu predicción' : scaleOf(question).axisLabel),
     el('div', { class: 'options' }, valueOptions),
-    el('label', { class: 'label' }, 'Cuánto apuestas (contra 1€)'),
-    el('div', { class: 'options' }, amountOptions),
-    betNode,
+    isBet ? el('label', { class: 'label' }, 'Cuánto apuestas (contra 1€)') : null,
+    isBet ? el('div', { class: 'options' }, amountOptions) : null,
+    isBet ? betNode : null,
     el('label', { class: 'label' }, 'Comentario'),
     el('textarea', {
       rows: 2, value: d.comment, placeholder: 'Por qué crees eso',
@@ -498,7 +506,11 @@ function render() {
         class: 'btn ghost',
         onclick: () => { session.clear(); state.me = null; state.loginName = null; render(); }
       }, 'Salir')),
-    ...state.questions.map(renderCard),
+    el('div', { class: 'filters' }, TABS.map((t) => el('button', {
+      class: state.tab === t.key ? 'on' : '',
+      onclick: () => { state.tab = t.key; render(); }
+    }, t.label))),
+    ...state.questions.filter((q) => inTab(state.tab, q)).map(renderCard),
     renderPropose()
   );
 }

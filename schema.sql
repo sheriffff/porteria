@@ -167,6 +167,15 @@ insert into questions (id, section, kind, text, criterion, deadline, status) val
  'Años entre las dos aprobaciones, en el registro oficial de la FDA o la EMA.', null, 'active'),
 (gen_random_uuid(), 'Generalidad', 'year',
  'Año en que se resuelve el último (7º) problema del milenio.',
- 'El Clay Mathematics Institute reconoce en su web la resolución del último problema pendiente.', null, 'active');
+ 'El Clay Mathematics Institute reconoce en su web la resolución del último problema pendiente.', null, 'active'),
+(gen_random_uuid(), 'Matemáticas', 'yesno',
+ 'La Hipótesis de Riemann queda demostrada antes de 2030.',
+ 'Demostración aceptada por la comunidad matemática antes de 2030.', '2030', 'active'),
+(gen_random_uuid(), 'Matemáticas', 'yesno',
+ 'Se resuelve un problema del milenio del Clay Institute antes de 2030.',
+ 'El Clay Mathematics Institute lo reconoce en su web antes de 2030.', '2030', 'active'),
+(gen_random_uuid(), 'Ciencia', 'yesno',
+ 'Se aprueba un tratamiento que frena el Alzheimer antes de 2030.',
+ 'Aprobación de la FDA o la EMA antes de 2030.', '2030', 'active');
 
 alter publication supabase_realtime add table questions, answers, reactions, flags;

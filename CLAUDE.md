@@ -27,9 +27,9 @@ Las escrituras van por funciones `security definer` que verifican el PIN. Las ta
 
 - Tres tipos de pregunta: `yesno` (con fecha límite), `year` (¿en qué año?) y `gap` (¿cuántos años entre dos hitos?). Los tipos numéricos (`year`, `gap`) se responden con un campo para escribir el número y un botón para el extremo (`>2050` / `>20`); la escala de cada uno vive en `SCALES` y el goalpost los dibuja sobre un eje continuo. El criterio de resolución se guarda pero no se muestra en la tarjeta.
 - Sección `Generalidad`: preguntas sobre si resolver un problema arrastra a los demás — huecos en años entre hitos. Recogen el debate sobre si la superinteligencia generaliza o cada problema necesita su marco.
-- Las preguntas se listan de corrido, en una sola lista, sin filtros ni etiqueta de sección en la tarjeta.
+- Las preguntas se agrupan en tres pestañas por tipo (`TABS`): sí/no (`yesno`), timeline (`year`) y otras (`gap`). Sin etiqueta de sección en la tarjeta.
 - Cada respuesta lleva: predicción, apuesta, comentario y "¿qué te haría cambiar de opinión?".
-- La apuesta se muestra siempre como frase completa ("Pongo 10€ a que pasa antes de que acabe 2031, contra 1€ de quien diga que no"), nunca como notación de cuotas. El importe se elige con botones (`AMOUNTS`: 1, 2, 5, 10€) o escribiendo una cantidad; siempre se apuesta contra 1€. La columna `ratio` guarda ese importe. La probabilidad implícita se muestra en pequeño.
+- Solo las preguntas `yesno` llevan apuesta de dinero; `year` y `gap` solo registran la predicción, sin importe. En `yesno` la apuesta se muestra como frase completa ("Pongo 10€ a que SÍ antes del 2030, contra 1€ de quien diga que no"), nunca como cuotas. El importe se elige con botones (`AMOUNTS`: 1, 2, 5, 10€) o escribiendo una cantidad; siempre contra 1€. La columna `ratio` guarda ese importe. La probabilidad implícita se muestra en pequeño.
 - Se puede responder muchas veces. Cada respuesta es una fila nueva; nunca se sobrescribe. La visualización "goalpost" dibuja la secuencia de respuestas de cada jugador sobre el eje de años, con el último punto relleno.
 - Las respuestas de los demás son siempre visibles antes de responder. Es deliberado.
 - Las apuestas son simbólicas, en euros de mentira.
