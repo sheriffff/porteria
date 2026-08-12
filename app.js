@@ -12,7 +12,7 @@ const SCALES = {
 const AMOUNTS = [1, 2, 5, 10];
 const DEFAULT_AMOUNT = 1;
 const SECTIONS = ['Matemáticas', 'Ciencia', 'Generalidad'];
-const TABS = [{ key: 'yesno', label: 'sí/no' }, { key: 'year', label: 'timeline' }, { key: 'otras', label: 'otras' }];
+const TABS = [{ key: 'yesno', label: 'sí/no' }, { key: 'multi', label: 'años' }];
 const EMOJIS = ['👍', '😂', '🤔', '🔥', '🙄'];
 
 const state = {
@@ -57,7 +57,7 @@ const el = (tag, attrs = {}, ...kids) => {
 
 const uid = () => crypto.randomUUID();
 const scaleOf = (question) => SCALES[question.kind];
-const inTab = (tab, q) => tab === 'yesno' ? q.kind === 'yesno' : tab === 'year' ? q.kind === 'year' : (q.kind !== 'yesno' && q.kind !== 'year');
+const inTab = (tab, q) => tab === 'yesno' ? q.kind === 'yesno' : q.kind !== 'yesno';
 const numPct = (scale, v) => v === scale.beyond
   ? 100
   : ((Math.max(scale.min, Math.min(scale.max, Number(v))) - scale.min) / (scale.max - scale.min)) * 88;
