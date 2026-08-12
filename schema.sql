@@ -160,4 +160,15 @@ insert into questions (id, section, kind, text, criterion, deadline, status) val
  'Hay robotaxis sin conductor operando comercialmente en alguna ciudad española.',
  'Servicio abierto al público, sin persona de seguridad a bordo, cobrando por el trayecto.', '31/12/2027', 'active');
 
+insert into questions (id, section, kind, text, criterion, deadline, status) values
+(gen_random_uuid(), 'Matemáticas', 'year',
+ 'La Hipótesis de Riemann queda demostrada con una contribución de IA reconocida por los autores.',
+ 'Demostración publicada en revista revisada por pares o verificada en Lean/Coq, con la aportación de la IA reconocida en el propio artículo.', null, 'active'),
+(gen_random_uuid(), 'Matemáticas', 'year',
+ 'Uno de los problemas del milenio del Clay Institute se resuelve con una demostración generada por IA.',
+ 'El Clay Mathematics Institute reconoce la resolución en su web oficial y señala la aportación de la IA.', null, 'active'),
+(gen_random_uuid(), 'Ciencia', 'year',
+ 'Se aprueba un tratamiento que frena el avance del Alzheimer con la diana o la molécula descubiertas por IA.',
+ 'Aprobación de la FDA o la EMA en su registro oficial, con el hallazgo atribuido a un método de IA en la ficha o publicación asociada.', null, 'active');
+
 alter publication supabase_realtime add table questions, answers, reactions, flags;
