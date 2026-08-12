@@ -350,7 +350,7 @@ function renderCard(question) {
       ? renderForm(question)
       : el('div', { class: 'actions' },
           state.me && question.status !== 'resolved'
-            ? el('button', { class: 'btn', onclick: openForm }, mine.length ? 'Cambiar mi respuesta' : 'Responder')
+            ? el('button', { class: 'btn', onclick: openForm }, mine.length ? 'Responder de nuevo' : 'Responder')
             : null,
           isAdmin && question.status === 'proposed'
             ? el('button', { class: 'btn ghost', onclick: () => setStatus(question, 'active') }, 'Aprobar')
