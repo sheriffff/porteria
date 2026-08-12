@@ -1,0 +1,1129 @@
+===== FILE: index.html =====
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La portería</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="page">
+  <div class="inner">
+    <h1>La portería</h1>
+    <p class="tagline">Registro de predicciones · lo dicho, dicho queda</p>
+    <div id="app"><p class="loading">Cargando el registro…</p></div>
+  </div>
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
+
+===== FILE: styles.css =====
+
+:root {
+  --paper: #e7eaef;
+  --card: #f4f6f8;
+  --ink: #0e1218;
+  --muted: #68727f;
+  --rule: #c0c8d4;
+  --felt: #12654a;
+  --never: #b01455;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.page { min-height: 100vh; padding: 20px 14px 60px; }
+.inner { max-width: 720px; margin: 0 auto; }
+
+h1 {
+  font-family: 'Bebas Neue', Impact, sans-serif;
+  font-size: clamp(44px, 13vw, 82px);
+  line-height: .84;
+  letter-spacing: .01em;
+  margin: 0;
+}
+
+.tagline {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .14em;
+  color: var(--muted);
+  margin: 10px 0 0;
+}
+
+.loading {
+  font-family: 'IBM Plex Mono', monospace;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.bar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--rule);
+  margin-top: 18px;
+  padding-top: 10px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+}
+
+.filters { display: flex; gap: 6px; overflow-x: auto; padding: 14px 0; }
+
+.filters button {
+  flex: 0 0 auto;
+  background: none;
+  border: 1px solid var(--rule);
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  padding: 6px 10px;
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.filters button.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+
+.card.proposed { border-style: dashed; background: none; }
+.card.resolved { opacity: .72; }
+
+.card-head {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.section { color: var(--felt); font-weight: 600; }
+.deadline::before { content: "· "; }
+
+.stamp {
+  border: 1px solid var(--never);
+  color: var(--never);
+  padding: 1px 6px;
+  border-radius: 2px;
+}
+
+.stamp.done { border-color: var(--felt); color: var(--felt); }
+
+.card h2 { font-size: 17px; line-height: 1.32; margin: 0 0 10px; font-weight: 500; }
+
+.criterion {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 0 0 16px;
+  padding-left: 10px;
+  border-left: 2px solid var(--rule);
+}
+
+.criterion span {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  display: block;
+}
+
+.goalpost { margin: 14px 0 16px; }
+.axis { position: relative; height: 16px; margin: 0 0 6px 78px; }
+
+.tick {
+  position: absolute;
+  transform: translateX(-50%);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.tick.never { color: var(--never); }
+
+.lane { display: flex; align-items: center; height: 26px; }
+
+.who {
+  width: 78px;
+  flex: 0 0 78px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.track { position: relative; flex: 1; height: 100%; }
+.rail { position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--rule); }
+.segment { position: absolute; top: 50%; height: 2px; background: var(--never); opacity: .5; }
+
+.dot {
+  position: absolute;
+  top: 50%;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  border: 1.5px solid var(--ink);
+  background: var(--card);
+}
+
+.dot.last { background: var(--ink); }
+.dot.never { border-color: var(--never); }
+.dot.last.never { background: var(--never); }
+
+.row { display: flex; align-items: baseline; margin-bottom: 4px; }
+.seq { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; }
+
+.cell {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.cell.last { color: var(--ink); font-weight: 600; }
+.cell em { font-style: normal; opacity: .6; font-size: 10px; }
+.arrow { color: var(--never); font-size: 11px; }
+.foot { font-size: 10.5px; color: var(--muted); margin: 8px 0 0 78px; }
+
+.answers { border-top: 1px solid var(--rule); padding-top: 12px; }
+.answer { margin-bottom: 14px; }
+.answer-head { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.answer-head strong { font-size: 13px; }
+
+.bet {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11.5px;
+  color: var(--felt);
+  flex: 1 1 200px;
+}
+
+.prob { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); }
+.comment { font-size: 13.5px; line-height: 1.45; margin: 6px 0 0; }
+.change { font-size: 12.5px; line-height: 1.45; margin: 6px 0 0; color: var(--muted); }
+
+.change span {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  display: block;
+  color: var(--never);
+}
+
+.reactions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+
+.reaction {
+  background: none;
+  border: 1px solid var(--rule);
+  border-radius: 20px;
+  padding: 2px 8px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.reaction.on { border-color: var(--ink); color: var(--ink); }
+.reaction span { font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; margin-left: 4px; }
+
+.form { border-top: 1px solid var(--rule); padding-top: 14px; }
+.options { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+
+.opt {
+  background: none;
+  border: 1px solid var(--rule);
+  padding: 7px 12px;
+  border-radius: 2px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--ink);
+}
+
+.opt.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+.opt.never { color: var(--never); }
+.opt.on.never { background: var(--never); color: #fff; border-color: var(--never); }
+
+.label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--muted);
+  display: block;
+  margin-bottom: 5px;
+}
+
+.slider { width: 100%; accent-color: var(--felt); }
+
+.bet-line {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--felt);
+  background: rgba(18, 101, 74, .07);
+  padding: 9px 11px;
+  border-radius: 2px;
+  margin: 6px 0 16px;
+  line-height: 1.4;
+}
+
+textarea, input {
+  width: 100%;
+  font-family: Inter, sans-serif;
+  font-size: 14px;
+  padding: 8px 10px;
+  border: 1px solid var(--rule);
+  border-radius: 2px;
+  background: #fff;
+  color: var(--ink);
+  margin-bottom: 14px;
+  resize: vertical;
+}
+
+.actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.btn {
+  background: var(--ink);
+  color: var(--paper);
+  border: 1px solid var(--ink);
+  padding: 8px 14px;
+  border-radius: 2px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: Inter, sans-serif;
+}
+
+.btn.ghost { background: none; color: var(--muted); border-color: var(--rule); }
+.btn.ghost.on { color: var(--never); border-color: var(--never); }
+.btn.wide { width: 100%; margin-top: 6px; padding: 12px; }
+.btn[disabled] { opacity: .5; cursor: default; }
+
+.flags { font-size: 11.5px; color: var(--never); margin: 10px 0 0; }
+
+.login {
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  padding: 16px;
+  background: var(--card);
+}
+
+.lead { font-size: 14px; margin: 0 0 14px; line-height: 1.5; }
+.names { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+
+.chip {
+  background: none;
+  border: 1px solid var(--rule);
+  padding: 8px 12px;
+  border-radius: 2px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.chip.on { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+.unclaimed {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  opacity: .55;
+  margin-left: 6px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.pin-row { display: flex; gap: 8px; align-items: flex-start; }
+
+.pin {
+  width: 100px;
+  font-family: 'IBM Plex Mono', monospace;
+  letter-spacing: .4em;
+  text-align: center;
+}
+
+.add { display: flex; gap: 8px; margin-top: 10px; }
+.error { color: var(--never); font-size: 13px; margin: 0 0 10px; }
+
+.note {
+  font-size: 11.5px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin: 14px 0 0;
+  border-top: 1px solid var(--rule);
+  padding-top: 10px;
+}
+
+button:focus-visible, input:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--never);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .dot { transition: left .2s ease; }
+}
+
+===== FILE: app.js =====
+
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+const SUPABASE_URL = 'PON_AQUI_TU_URL';
+const SUPABASE_ANON_KEY = 'PON_AQUI_TU_ANON_KEY';
+
+const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const YEARS = [2027, 2028, 2031, 2036, 2046];
+const NEVER = 'nunca';
+const SLOTS = [...YEARS, NEVER];
+const SECTIONS = ['Matemáticas', 'Programación', 'Economía', 'Ciencia', 'Cotidianas'];
+const EMOJIS = ['👍', '😂', '🤔', '🔥', '🙄'];
+const RATIOS = [[1,20],[1,10],[1,5],[1,3],[1,2],[1,1],[2,1],[3,1],[5,1],[10,1],[20,1],[50,1],[100,1]];
+const EVEN = 5;
+
+const state = {
+  players: [],
+  questions: [],
+  answers: [],
+  reactions: [],
+  flags: [],
+  me: null,
+  filter: 'todas',
+  openForm: null,
+  openPropose: false,
+  draft: null,
+  proposal: null,
+  error: null,
+  loginName: null,
+  loginError: null,
+  busy: false
+};
+
+const app = document.getElementById('app');
+
+const el = (tag, attrs = {}, ...kids) => {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (v === null || v === undefined || v === false) continue;
+    if (k === 'class') node.className = v;
+    else if (k === 'html') node.innerHTML = v;
+    else if (k.startsWith('on')) node.addEventListener(k.slice(2), v);
+    else if (k === 'style') Object.assign(node.style, v);
+    else if (k in node && k !== 'list') node[k] = v;
+    else node.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) {
+    if (kid === null || kid === undefined || kid === false) continue;
+    node.append(kid instanceof Node ? kid : document.createTextNode(String(kid)));
+  }
+  return node;
+};
+
+const uid = () => crypto.randomUUID();
+const slotOf = (v) => (v === NEVER ? SLOTS.length - 1 : YEARS.indexOf(Number(v)));
+const pct = (i) => (i / (SLOTS.length - 1)) * 100;
+const shortDate = (iso) => new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: '2-digit' });
+const implied = (r) => Math.round((RATIOS[r][0] / (RATIOS[r][0] + RATIOS[r][1])) * 100);
+
+function betLine(question, value, ratio) {
+  const [mine, yours] = RATIOS[ratio];
+  if (question.kind === 'yesno') {
+    const side = value === 'si' ? 'que SÍ' : 'que NO';
+    const other = value === 'si' ? 'que no' : 'que sí';
+    return `Pongo ${mine}€ a ${side} antes del ${question.deadline}, contra ${yours}€ de quien diga ${other}.`;
+  }
+  if (value === NEVER) {
+    return `Pongo ${mine}€ a que no pasa antes de ${YEARS[YEARS.length - 1]}, contra ${yours}€ de quien diga que sí.`;
+  }
+  return `Pongo ${mine}€ a que pasa antes de que acabe ${value}, contra ${yours}€ de quien diga que no.`;
+}
+
+const session = {
+  get() {
+    try { return JSON.parse(localStorage.getItem('porteria.session')); } catch { return null; }
+  },
+  set(v) { localStorage.setItem('porteria.session', JSON.stringify(v)); },
+  clear() { localStorage.removeItem('porteria.session'); }
+};
+
+async function loadAll() {
+  const [players, questions, answers, reactions, flags] = await Promise.all([
+    db.from('players').select('name, pin_hash').order('name'),
+    db.from('questions').select('*').order('created_at'),
+    db.from('answers').select('*').order('created_at'),
+    db.from('reactions').select('*'),
+    db.from('flags').select('*')
+  ]);
+  const failed = [players, questions, answers, reactions, flags].find((r) => r.error);
+  if (failed) {
+    state.error = 'No se ha podido leer el registro. Revisa la configuración de Supabase.';
+    render();
+    return;
+  }
+  state.players = players.data.map((p) => ({ name: p.name, claimed: !!p.pin_hash }));
+  state.questions = questions.data;
+  state.answers = answers.data;
+  state.reactions = reactions.data;
+  state.flags = flags.data;
+  state.error = null;
+  render();
+}
+
+async function call(fn, args) {
+  const s = session.get();
+  const { data, error } = await db.rpc(fn, { p_name: s.name, p_pin: s.pin, ...args });
+  if (error) {
+    state.error = 'No se ha podido guardar: ' + error.message;
+    render();
+    return null;
+  }
+  return data;
+}
+
+function subscribe() {
+  db.channel('registry')
+    .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+      if (state.openForm || state.openPropose) return;
+      loadAll();
+    })
+    .subscribe();
+}
+
+function answersFor(qid) {
+  return state.answers.filter((a) => a.question_id === qid);
+}
+
+function historyOf(qid, player) {
+  return answersFor(qid)
+    .filter((a) => a.player === player)
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+}
+
+function renderGoalpost(question) {
+  const rows = state.players
+    .map((p) => ({ name: p.name, list: historyOf(question.id, p.name) }))
+    .filter((r) => r.list.length);
+  if (!rows.length) return null;
+
+  if (question.kind === 'yesno') {
+    return el('div', { class: 'goalpost' },
+      rows.map((r) => el('div', { class: 'row' },
+        el('span', { class: 'who' }, r.name),
+        el('span', { class: 'seq' },
+          r.list.flatMap((a, i) => [
+            i > 0 ? el('span', { class: 'arrow' }, '→') : null,
+            el('span', { class: 'cell' + (i === r.list.length - 1 ? ' last' : '') },
+              a.value === 'si' ? 'SÍ' : 'NO',
+              ' ',
+              el('em', {}, shortDate(a.created_at)))
+          ]).filter(Boolean))))
+    );
+  }
+
+  return el('div', { class: 'goalpost' },
+    el('div', { class: 'axis' },
+      SLOTS.map((s, i) => el('span', {
+        class: 'tick' + (s === NEVER ? ' never' : ''),
+        style: { left: pct(i) + '%' }
+      }, s))),
+    rows.map((r) => el('div', { class: 'lane' },
+      el('span', { class: 'who' }, r.name),
+      el('div', { class: 'track' },
+        el('div', { class: 'rail' }),
+        r.list.flatMap((a, i) => {
+          const x = pct(slotOf(a.value));
+          const prev = i > 0 ? pct(slotOf(r.list[i - 1].value)) : null;
+          return [
+            prev !== null ? el('div', {
+              class: 'segment',
+              style: { left: Math.min(prev, x) + '%', width: Math.abs(x - prev) + '%' }
+            }) : null,
+            el('div', {
+              class: 'dot' + (i === r.list.length - 1 ? ' last' : '') + (a.value === NEVER ? ' never' : ''),
+              style: { left: x + '%' },
+              title: `${a.value} · ${shortDate(a.created_at)}`
+            })
+          ].filter(Boolean);
+        })))),
+    rows.some((r) => r.list.length > 1)
+      ? el('p', { class: 'foot' }, 'Cada punto es una respuesta con su fecha. El relleno es la última.')
+      : null
+  );
+}
+
+async function toggleReaction(answerId, emoji) {
+  const existing = state.reactions.find((r) => r.answer_id === answerId && r.player === state.me && r.emoji === emoji);
+  await call('toggle_reaction', { p_answer_id: answerId, p_emoji: emoji, p_remove: !!existing });
+  await loadAll();
+}
+
+function renderAnswers(question) {
+  const latest = state.players
+    .map((p) => historyOf(question.id, p.name).slice(-1)[0])
+    .filter(Boolean)
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  if (!latest.length) return null;
+
+  return el('div', { class: 'answers' }, latest.map((a) => {
+    const rs = state.reactions.filter((r) => r.answer_id === a.id);
+    return el('div', { class: 'answer' },
+      el('div', { class: 'answer-head' },
+        el('strong', {}, a.player),
+        el('span', { class: 'bet' }, betLine(question, a.value, a.ratio)),
+        el('span', { class: 'prob' }, implied(a.ratio) + '%')),
+      a.comment ? el('p', { class: 'comment' }, a.comment) : null,
+      a.change_mind
+        ? el('p', { class: 'change' }, el('span', {}, 'Cambiaría de opinión si'), ' ' + a.change_mind)
+        : null,
+      state.me ? el('div', { class: 'reactions' }, EMOJIS.map((e) => {
+        const who = rs.filter((r) => r.emoji === e);
+        return el('button', {
+          class: 'reaction' + (who.some((r) => r.player === state.me) ? ' on' : ''),
+          title: who.map((r) => r.player).join(', ') || 'Reaccionar',
+          onclick: () => toggleReaction(a.id, e)
+        }, e, who.length ? el('span', {}, who.map((r) => r.player).join(' ')) : null);
+      })) : null);
+  }));
+}
+
+function renderForm(question) {
+  const d = state.draft;
+  const update = (patch) => { Object.assign(d, patch); render(); };
+
+  const valueOptions = question.kind === 'yesno'
+    ? [['si', 'Sí'], ['no', 'No']].map(([v, label]) =>
+        el('button', { class: 'opt' + (d.value === v ? ' on' : ''), onclick: () => update({ value: v }) }, label))
+    : SLOTS.map((s) => el('button', {
+        class: 'opt' + (String(d.value) === String(s) ? ' on' : '') + (s === NEVER ? ' never' : ''),
+        onclick: () => update({ value: String(s) })
+      }, s));
+
+  return el('div', { class: 'form' },
+    el('div', { class: 'options' }, valueOptions),
+    el('label', { class: 'label' }, 'Tu apuesta'),
+    el('input', {
+      type: 'range', min: 0, max: RATIOS.length - 1, value: d.ratio, class: 'slider',
+      oninput: (e) => update({ ratio: Number(e.target.value) })
+    }),
+    el('p', { class: 'bet-line' }, betLine(question, d.value, d.ratio)),
+    el('label', { class: 'label' }, 'Comentario'),
+    el('textarea', {
+      rows: 2, value: d.comment, placeholder: 'Por qué crees eso',
+      oninput: (e) => { d.comment = e.target.value; }
+    }),
+    el('label', { class: 'label' }, '¿Qué te haría cambiar de opinión?'),
+    el('textarea', {
+      rows: 2, value: d.changeMind, placeholder: 'Un hecho concreto que, si ocurre, te movería',
+      oninput: (e) => { d.changeMind = e.target.value; }
+    }),
+    el('div', { class: 'actions' },
+      el('button', { class: 'btn', disabled: state.busy, onclick: () => submitAnswer(question) }, 'Guardar respuesta'),
+      el('button', { class: 'btn ghost', onclick: () => { state.openForm = null; state.draft = null; render(); } }, 'Cancelar'))
+  );
+}
+
+async function submitAnswer(question) {
+  const d = state.draft;
+  state.busy = true;
+  render();
+  const ok = await call('submit_answer', {
+    p_id: uid(),
+    p_question_id: question.id,
+    p_value: String(d.value),
+    p_ratio: d.ratio,
+    p_comment: d.comment.trim(),
+    p_change_mind: d.changeMind.trim()
+  });
+  state.busy = false;
+  if (ok !== null) {
+    state.openForm = null;
+    state.draft = null;
+  }
+  await loadAll();
+}
+
+async function toggleFlag(question) {
+  const mine = state.flags.some((f) => f.question_id === question.id && f.player === state.me);
+  await call('toggle_flag', { p_question_id: question.id, p_remove: mine });
+  await loadAll();
+}
+
+async function setStatus(question, status, resolution) {
+  await call('set_question_status', { p_question_id: question.id, p_status: status, p_resolution: resolution || null });
+  await loadAll();
+}
+
+function renderCard(question) {
+  const flags = state.flags.filter((f) => f.question_id === question.id);
+  const flagged = flags.some((f) => f.player === state.me);
+  const mine = state.me ? historyOf(question.id, state.me) : [];
+  const isAdmin = state.me === 'Sheriff';
+
+  const openForm = () => {
+    const last = mine.slice(-1)[0];
+    state.draft = {
+      value: last ? last.value : (question.kind === 'yesno' ? 'si' : String(YEARS[1])),
+      ratio: last ? last.ratio : EVEN,
+      comment: '',
+      changeMind: ''
+    };
+    state.openForm = question.id;
+    render();
+  };
+
+  return el('article', { class: 'card' + (question.status !== 'active' ? ' ' + question.status : '') },
+    el('header', { class: 'card-head' },
+      el('span', { class: 'section' }, question.section),
+      el('span', { class: 'deadline' }, question.kind === 'yesno' ? `sí / no · antes del ${question.deadline}` : '¿en qué año?'),
+      question.status === 'proposed' ? el('span', { class: 'stamp' }, 'propuesta') : null,
+      question.status === 'resolved' ? el('span', { class: 'stamp done' }, 'resuelta: ' + question.resolution) : null),
+    el('h2', {}, question.text),
+    el('p', { class: 'criterion' }, el('span', {}, 'Se resuelve así'), ' ' + question.criterion),
+    renderGoalpost(question),
+    renderAnswers(question),
+    question.status !== 'resolved' && state.openForm === question.id
+      ? renderForm(question)
+      : el('div', { class: 'actions' },
+          state.me && question.status !== 'resolved'
+            ? el('button', { class: 'btn', onclick: openForm }, mine.length ? 'Cambiar mi respuesta' : 'Responder')
+            : null,
+          state.me && question.status !== 'resolved'
+            ? el('button', {
+                class: 'btn ghost' + (flagged ? ' on' : ''),
+                onclick: () => toggleFlag(question)
+              }, 'No es evaluable' + (flags.length ? ` (${flags.length})` : ''))
+            : null,
+          isAdmin && question.status === 'proposed'
+            ? el('button', { class: 'btn ghost', onclick: () => setStatus(question, 'active') }, 'Aprobar')
+            : null,
+          isAdmin && question.status === 'active'
+            ? el('button', { class: 'btn ghost', onclick: () => setStatus(question, 'resolved', 'sí') }, 'Resolver: pasó')
+            : null,
+          isAdmin && question.status === 'active'
+            ? el('button', { class: 'btn ghost', onclick: () => setStatus(question, 'resolved', 'no') }, 'Resolver: no pasó')
+            : null),
+    flags.length
+      ? el('p', { class: 'flags' }, 'Marcada como no evaluable por ' + flags.map((f) => f.player).join(', ') + '.')
+      : null
+  );
+}
+
+function renderPropose() {
+  if (!state.openPropose) {
+    return el('button', {
+      class: 'btn ghost wide',
+      onclick: () => {
+        state.proposal = { section: SECTIONS[0], kind: 'year', deadline: '31/12/2027', text: '', criterion: '' };
+        state.openPropose = true;
+        render();
+      }
+    }, 'Proponer una pregunta');
+  }
+
+  const p = state.proposal;
+  const update = (patch) => { Object.assign(p, patch); render(); };
+
+  return el('div', { class: 'form' },
+    el('div', { class: 'options' }, SECTIONS.map((s) =>
+      el('button', { class: 'opt' + (p.section === s ? ' on' : ''), onclick: () => update({ section: s }) }, s))),
+    el('div', { class: 'options' },
+      el('button', { class: 'opt' + (p.kind === 'year' ? ' on' : ''), onclick: () => update({ kind: 'year' }) }, '¿En qué año?'),
+      el('button', { class: 'opt' + (p.kind === 'yesno' ? ' on' : ''), onclick: () => update({ kind: 'yesno' }) }, 'Sí / no con fecha')),
+    p.kind === 'yesno'
+      ? el('input', { value: p.deadline, placeholder: 'Fecha límite', oninput: (e) => { p.deadline = e.target.value; } })
+      : null,
+    el('label', { class: 'label' }, 'La pregunta'),
+    el('textarea', {
+      rows: 2, value: p.text, placeholder: 'Algo que ocurra o no ocurra, sin adjetivos',
+      oninput: (e) => { p.text = e.target.value; }
+    }),
+    el('label', { class: 'label' }, 'Cómo se resuelve'),
+    el('textarea', {
+      rows: 2, value: p.criterion,
+      placeholder: 'Quién lo declara y con qué evidencia. Si no cabe en una frase, la pregunta no sirve.',
+      oninput: (e) => { p.criterion = e.target.value; }
+    }),
+    el('div', { class: 'actions' },
+      el('button', { class: 'btn', disabled: state.busy, onclick: submitProposal }, 'Proponer'),
+      el('button', { class: 'btn ghost', onclick: () => { state.openPropose = false; state.proposal = null; render(); } }, 'Cancelar'))
+  );
+}
+
+async function submitProposal() {
+  const p = state.proposal;
+  if (!p.text.trim() || !p.criterion.trim()) return;
+  state.busy = true;
+  render();
+  const ok = await call('propose_question', {
+    p_id: uid(),
+    p_section: p.section,
+    p_kind: p.kind,
+    p_text: p.text.trim(),
+    p_criterion: p.criterion.trim(),
+    p_deadline: p.kind === 'yesno' ? p.deadline.trim() : null
+  });
+  state.busy = false;
+  if (ok !== null) {
+    state.openPropose = false;
+    state.proposal = null;
+  }
+  await loadAll();
+}
+
+async function login(name, pin) {
+  if (!/^\d{4}$/.test(pin)) {
+    state.loginError = 'El PIN son 4 cifras.';
+    render();
+    return;
+  }
+  const { data, error } = await db.rpc('login', { p_name: name, p_pin: pin });
+  if (error || !data) {
+    state.loginError = error ? error.message : `Ese PIN no es el de ${name}.`;
+    render();
+    return;
+  }
+  session.set({ name, pin });
+  state.me = name;
+  state.loginError = null;
+  await loadAll();
+}
+
+async function addPlayer(name) {
+  const clean = name.trim();
+  if (!clean) return;
+  const { error } = await db.from('players').insert({ name: clean });
+  if (error) {
+    state.loginError = 'Ese nombre ya existe o no se ha podido crear.';
+    render();
+    return;
+  }
+  state.loginName = clean;
+  await loadAll();
+}
+
+function renderLogin() {
+  let pinValue = '';
+  let newName = '';
+  const selected = state.loginName;
+  const claimed = selected ? state.players.find((p) => p.name === selected)?.claimed : false;
+
+  return el('div', { class: 'login' },
+    el('p', { class: 'lead' }, 'Elige tu nombre. La primera vez que entras, el PIN que pongas queda como el tuyo.'),
+    el('div', { class: 'names' }, state.players.map((p) =>
+      el('button', {
+        class: 'chip' + (selected === p.name ? ' on' : ''),
+        onclick: () => { state.loginName = p.name; state.loginError = null; render(); }
+      }, p.name, !p.claimed ? el('span', { class: 'unclaimed' }, 'sin PIN') : null))),
+    selected ? el('div', { class: 'pin-row' },
+      el('input', {
+        class: 'pin', inputMode: 'numeric', maxLength: 4, placeholder: '····',
+        'aria-label': 'PIN de 4 cifras',
+        oninput: (e) => { e.target.value = e.target.value.replace(/\D/g, ''); pinValue = e.target.value; }
+      }),
+      el('button', { class: 'btn', onclick: () => login(selected, pinValue) }, claimed ? 'Entrar' : 'Fijar PIN y entrar')
+    ) : null,
+    state.loginError ? el('p', { class: 'error' }, state.loginError) : null,
+    el('div', { class: 'add' },
+      el('input', { placeholder: 'Añadir a otro jugador', oninput: (e) => { newName = e.target.value; } }),
+      el('button', { class: 'btn ghost', onclick: () => addPlayer(newName) }, 'Añadir')),
+    el('p', { class: 'note' }, 'Esto es un candado de cortesía entre amigos, no seguridad. Lo que protege el registro es que las respuestas no se pueden editar ni borrar.')
+  );
+}
+
+function render() {
+  app.replaceChildren();
+
+  if (state.error) app.append(el('p', { class: 'error' }, state.error));
+
+  if (!state.me) {
+    app.append(renderLogin());
+    return;
+  }
+
+  app.append(
+    el('div', { class: 'bar' },
+      el('span', {}, 'Entras como ', el('strong', {}, state.me)),
+      el('button', {
+        class: 'btn ghost',
+        onclick: () => { session.clear(); state.me = null; state.loginName = null; render(); }
+      }, 'Salir')),
+    el('div', { class: 'filters' },
+      el('button', {
+        class: state.filter === 'todas' ? 'on' : '',
+        onclick: () => { state.filter = 'todas'; render(); }
+      }, 'Todas'),
+      SECTIONS.map((s) => el('button', {
+        class: state.filter === s ? 'on' : '',
+        onclick: () => { state.filter = s; render(); }
+      }, s))),
+    state.questions
+      .filter((q) => state.filter === 'todas' || q.section === state.filter)
+      .map(renderCard),
+    renderPropose()
+  );
+}
+
+const saved = session.get();
+if (saved) state.me = saved.name;
+loadAll().then(subscribe);
+
+===== FILE: schema.sql =====
+
+create extension if not exists pgcrypto;
+
+create table players (
+  name text primary key,
+  pin_hash text,
+  created_at timestamptz not null default now()
+);
+
+create table questions (
+  id uuid primary key,
+  section text not null,
+  kind text not null check (kind in ('year', 'yesno')),
+  text text not null,
+  criterion text not null,
+  deadline text,
+  status text not null default 'proposed' check (status in ('proposed', 'active', 'resolved')),
+  resolution text,
+  author text references players(name),
+  created_at timestamptz not null default now()
+);
+
+create table answers (
+  id uuid primary key,
+  question_id uuid not null references questions(id) on delete cascade,
+  player text not null references players(name),
+  value text not null,
+  ratio int not null check (ratio between 0 and 12),
+  comment text default '',
+  change_mind text default '',
+  created_at timestamptz not null default now()
+);
+
+create table reactions (
+  answer_id uuid not null references answers(id) on delete cascade,
+  player text not null references players(name),
+  emoji text not null,
+  primary key (answer_id, player, emoji)
+);
+
+create table flags (
+  question_id uuid not null references questions(id) on delete cascade,
+  player text not null references players(name),
+  primary key (question_id, player)
+);
+
+alter table players enable row level security;
+alter table questions enable row level security;
+alter table answers enable row level security;
+alter table reactions enable row level security;
+alter table flags enable row level security;
+
+create policy read_players on players for select using (true);
+create policy read_questions on questions for select using (true);
+create policy read_answers on answers for select using (true);
+create policy read_reactions on reactions for select using (true);
+create policy read_flags on flags for select using (true);
+
+create policy add_players on players for insert with check (pin_hash is null);
+
+create or replace function check_pin(p_name text, p_pin text)
+returns boolean language plpgsql security definer as $$
+declare stored text;
+begin
+  select pin_hash into stored from players where name = p_name;
+  if stored is null then return false; end if;
+  return stored = crypt(p_pin, stored);
+end; $$;
+
+create or replace function login(p_name text, p_pin text)
+returns boolean language plpgsql security definer as $$
+declare stored text;
+begin
+  if p_pin !~ '^\d{4}$' then return false; end if;
+  select pin_hash into stored from players where name = p_name;
+  if not found then return false; end if;
+  if stored is null then
+    update players set pin_hash = crypt(p_pin, gen_salt('bf')) where name = p_name;
+    return true;
+  end if;
+  return stored = crypt(p_pin, stored);
+end; $$;
+
+create or replace function submit_answer(
+  p_name text, p_pin text, p_id uuid, p_question_id uuid,
+  p_value text, p_ratio int, p_comment text, p_change_mind text)
+returns boolean language plpgsql security definer as $$
+begin
+  if not check_pin(p_name, p_pin) then raise exception 'PIN incorrecto'; end if;
+  if (select status from questions where id = p_question_id) = 'resolved' then
+    raise exception 'La pregunta ya está resuelta';
+  end if;
+  insert into answers (id, question_id, player, value, ratio, comment, change_mind)
+  values (p_id, p_question_id, p_name, p_value, p_ratio, coalesce(p_comment, ''), coalesce(p_change_mind, ''));
+  return true;
+end; $$;
+
+create or replace function propose_question(
+  p_name text, p_pin text, p_id uuid, p_section text, p_kind text,
+  p_text text, p_criterion text, p_deadline text)
+returns boolean language plpgsql security definer as $$
+begin
+  if not check_pin(p_name, p_pin) then raise exception 'PIN incorrecto'; end if;
+  insert into questions (id, section, kind, text, criterion, deadline, status, author)
+  values (p_id, p_section, p_kind, p_text, p_criterion, p_deadline, 'proposed', p_name);
+  return true;
+end; $$;
+
+create or replace function toggle_reaction(
+  p_name text, p_pin text, p_answer_id uuid, p_emoji text, p_remove boolean)
+returns boolean language plpgsql security definer as $$
+begin
+  if not check_pin(p_name, p_pin) then raise exception 'PIN incorrecto'; end if;
+  if p_remove then
+    delete from reactions where answer_id = p_answer_id and player = p_name and emoji = p_emoji;
+  else
+    insert into reactions (answer_id, player, emoji) values (p_answer_id, p_name, p_emoji)
+    on conflict do nothing;
+  end if;
+  return true;
+end; $$;
+
+create or replace function toggle_flag(p_name text, p_pin text, p_question_id uuid, p_remove boolean)
+returns boolean language plpgsql security definer as $$
+begin
+  if not check_pin(p_name, p_pin) then raise exception 'PIN incorrecto'; end if;
+  if p_remove then
+    delete from flags where question_id = p_question_id and player = p_name;
+  else
+    insert into flags (question_id, player) values (p_question_id, p_name) on conflict do nothing;
+  end if;
+  return true;
+end; $$;
+
+create or replace function set_question_status(
+  p_name text, p_pin text, p_question_id uuid, p_status text, p_resolution text)
+returns boolean language plpgsql security definer as $$
+begin
+  if not check_pin(p_name, p_pin) then raise exception 'PIN incorrecto'; end if;
+  if p_name <> 'Sheriff' then raise exception 'Solo el administrador puede hacer esto'; end if;
+  update questions set status = p_status, resolution = p_resolution where id = p_question_id;
+  return true;
+end; $$;
+
+insert into players (name) values ('Jorge'), ('Zango'), ('Sheriff'), ('Pablo');
+
+insert into questions (id, section, kind, text, criterion, deadline, status) values
+(gen_random_uuid(), 'Matemáticas', 'year',
+ 'Un problema abierto de la lista de Erdős se cierra con una contribución de IA reconocida por los mantenedores de la lista.',
+ 'Lo declaran los mantenedores de erdosproblems.com en la ficha del problema.', null, 'active'),
+(gen_random_uuid(), 'Programación', 'year',
+ 'Un agente cierra un pull request no trivial en un repositorio top-1000 de GitHub sin que ningún humano revise el código.',
+ 'PR mergeado, sin revisión humana en el historial, y más de 50 líneas de lógica nueva.', null, 'active'),
+(gen_random_uuid(), 'Economía', 'year',
+ 'Una empresa del S&P 500 anuncia despidos citando la IA explícitamente en la nota oficial.',
+ 'Nota de prensa o 8-K de la propia empresa. No valen filtraciones ni prensa.', null, 'active'),
+(gen_random_uuid(), 'Ciencia', 'year',
+ 'La FDA o la EMA aprueban un fármaco cuya molécula fue diseñada por IA.',
+ 'Aprobación publicada en el registro oficial, con la molécula atribuida a diseño computacional generativo.', null, 'active'),
+(gen_random_uuid(), 'Cotidianas', 'yesno',
+ 'Hay robotaxis sin conductor operando comercialmente en alguna ciudad española.',
+ 'Servicio abierto al público, sin persona de seguridad a bordo, cobrando por el trayecto.', '31/12/2027', 'active');
+
+alter publication supabase_realtime add table questions, answers, reactions, flags;
+
+===== FILE: README.md =====
+
+# La portería
+
+Registro de predicciones entre amigos. Las respuestas no se editan ni se borran: cada una queda con su fecha, y se ve cómo cambia la postura de cada uno con el tiempo.
+
+## Puesta en marcha
+
+1. Crea el repo en GitHub y mete estos cuatro archivos en la raíz.
+2. En Supabase, abre el SQL Editor y ejecuta `schema.sql` entero.
+3. En Supabase, Settings → API: copia la Project URL y la clave `anon`.
+4. Pégalas arriba del todo en `app.js`, en `SUPABASE_URL` y `SUPABASE_ANON_KEY`.
+5. En Vercel, importa el repo. No hay build: framework preset "Other", output directory la raíz.
+6. Abre la web, elige tu nombre y fija tu PIN.
+
+La clave `anon` es pública por diseño; lo que protege la base de datos son las políticas RLS y las funciones de `schema.sql`. Nadie puede editar ni borrar respuestas, tampoco tú.
+
+## Administración
+
+El administrador es el jugador llamado `Sheriff`: aprueba las preguntas propuestas y marca las resueltas. Para cambiarlo, edita el nombre en `set_question_status` y en la constante `isAdmin` de `app.js`.
+
+## Copia de seguridad
+
+Supabase → Table Editor → cada tabla → Export to CSV. Vale la pena hacerlo de vez en cuando y dejarlo en el repo.
+
+===== FILE: CLAUDE.md =====
+
+# Contexto del proyecto
+
+## Qué es
+
+Web de predicciones entre un grupo de amigos que discuten sobre el ritmo de progreso de la IA. El objetivo real: dejar registro fechado e inmutable de lo que cada uno predice, para que no se pueda reescribir la postura a posteriori.
+
+## Stack
+
+JS plano sin build. `index.html`, `app.js`, `styles.css` en la raíz. `supabase-js` por CDN con import de módulo ES. Supabase (Postgres + RLS + realtime) como backend. Vercel para desplegar, sin build step.
+
+No introducir React, Vite, TypeScript ni bundler. La ausencia de build es una decisión deliberada: el proyecto tiene que seguir funcionando dentro de muchos años sin mantenimiento de dependencias.
+
+## Convenciones
+
+- Código en inglés: nombres de archivo, variables, funciones, clases CSS.
+- Texto de la interfaz en español.
+- Sin comentarios en el código.
+- Sin `localStorage` para datos del registro; solo para la sesión.
+
+## Modelo de datos
+
+`players`, `questions`, `answers`, `reactions`, `flags`. El esquema completo está en `schema.sql`.
+
+Las escrituras van por funciones `security definer` que verifican el PIN. Las tablas no tienen políticas de `update` ni `delete`: las respuestas son inmutables por diseño y esa es la propiedad central del proyecto. No añadir edición ni borrado de respuestas.
+
+## Decisiones de producto ya tomadas
+
+- Dos tipos de pregunta: `yesno` con fecha límite fija, y `year` (¿en qué año?) con opciones 2027 / 2028 / 2031 / 2036 / 2046 / nunca.
+- Cada respuesta lleva: predicción, apuesta, comentario y "¿qué te haría cambiar de opinión?".
+- La apuesta se muestra siempre como frase completa ("Pongo 10€ a que pasa antes de que acabe 2031, contra 1€ de quien diga que no"), nunca como notación de cuotas. El deslizador recorre `RATIOS`, de 1:20 a 100:1. La probabilidad implícita se muestra en pequeño.
+- Se puede responder muchas veces. Cada respuesta es una fila nueva; nunca se sobrescribe. La visualización "goalpost" dibuja la secuencia de respuestas de cada jugador sobre el eje de años, con el último punto relleno.
+- Las respuestas de los demás son siempre visibles antes de responder. Es deliberado.
+- Las apuestas son simbólicas, en euros de mentira.
+- Cualquiera puede proponer preguntas; entran con estado `proposed` y las aprueba el administrador.
+- Administrador: el jugador llamado `Sheriff`. Aprueba propuestas y marca preguntas como resueltas.
+- Botón "no es evaluable" por pregunta, con recuento visible. Es una válvula de escape legítima para las objeciones sobre el criterio de resolución.
+- Reacciones con emoji, mostrando el nombre de quien reacciona.
+- Login por nombre + PIN de 4 cifras, fijado la primera vez. Es un candado de cortesía, no seguridad; el grupo lo sabe.
+
+## Pendiente
+
+El banco de preguntas está sin terminar: en `schema.sql` solo hay cinco de ejemplo, una por sección. Falta escribir el resto. Regla para cada pregunta nueva: si el criterio de resolución no cabe en una frase que diga quién lo declara y con qué evidencia, la pregunta no sirve y se descarta.
+
