@@ -5,13 +5,13 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const NEVER = 'nunca';
-const YEAR_PRESETS = [2027, 2030, 2035, 2040];
+const BEYOND = '>2050';
 const AXIS_MIN = 2026;
-const AXIS_MAX = 2046;
-const AXIS_TICKS = [2026, 2031, 2036, 2041, 2046, NEVER];
+const AXIS_MAX = 2050;
+const AXIS_TICKS = [2026, 2032, 2038, 2044, 2050, BEYOND];
 const AMOUNTS = [1, 2, 5, 10];
 const DEFAULT_AMOUNT = 1;
+const DEFAULT_YEAR = '2026';
 const SECTIONS = ['Matemáticas', 'Programación', 'Economía', 'Ciencia', 'Cotidianas'];
 const EMOJIS = ['👍', '😂', '🤔', '🔥', '🙄'];
 
@@ -54,7 +54,7 @@ const el = (tag, attrs = {}, ...kids) => {
 };
 
 const uid = () => crypto.randomUUID();
-const yearPct = (v) => v === NEVER
+const yearPct = (v) => v === BEYOND
   ? 100
   : ((Math.max(AXIS_MIN, Math.min(AXIS_MAX, Number(v))) - AXIS_MIN) / (AXIS_MAX - AXIS_MIN)) * 88;
 const shortDate = (iso) => new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: '2-digit' });
@@ -67,8 +67,8 @@ function betLine(question, value, amount) {
     const other = value === 'si' ? 'que no' : 'que sí';
     return `Pongo ${n}€ a ${side} antes del ${question.deadline}, contra 1€ de quien diga ${other}.`;
   }
-  if (value === NEVER) {
-    return `Pongo ${n}€ a que no pasa nunca, contra 1€ de quien diga que sí.`;
+  if (value === BEYOND) {
+    return `Pongo ${n}€ a que no pasa antes de 2050, contra 1€ de quien diga que sí.`;
   }
   return `Pongo ${n}€ a que pasa antes de que acabe ${value}, contra 1€ de quien diga que no.`;
 }
@@ -158,7 +158,7 @@ function renderGoalpost(question) {
   return el('div', { class: 'goalpost' },
     el('div', { class: 'axis' },
       AXIS_TICKS.map((t) => el('span', {
-        class: 'tick' + (t === NEVER ? ' never' : ''),
+        class: 'tick' + (t === BEYOND ? ' never' : ''),
         style: { left: yearPct(t) + '%' }
       }, t))),
     rows.map((r) => el('div', { class: 'lane' },
@@ -174,7 +174,7 @@ function renderGoalpost(question) {
               style: { left: Math.min(prev, x) + '%', width: Math.abs(x - prev) + '%' }
             }) : null,
             el('div', {
-              class: 'dot' + (i === r.list.length - 1 ? ' last' : '') + (a.value === NEVER ? ' never' : ''),
+              class: 'dot' + (i === r.list.length - 1 ? ' last' : '') + (a.value === BEYOND ? ' never' : ''),
               style: { left: x + '%' },
               title: `${a.value} · ${shortDate(a.created_at)}`
             })
@@ -232,18 +232,16 @@ function renderForm(question) {
     valueOptions = [['si', 'Sí'], ['no', 'No']].map(([v, label]) =>
       el('button', { class: 'opt' + (d.value === v ? ' on' : ''), onclick: () => update({ value: v }) }, label));
   } else {
-    const isPreset = YEAR_PRESETS.includes(Number(d.value));
+    const isBeyond = d.value === BEYOND;
     valueOptions = [
-      ...YEAR_PRESETS.map((y) =>
-        el('button', { class: 'opt' + (String(d.value) === String(y) ? ' on' : ''), onclick: () => update({ value: String(y) }) }, y)),
-      el('button', { class: 'opt never' + (d.value === NEVER ? ' on' : ''), onclick: () => update({ value: NEVER }) }, 'nunca'),
       el('input', {
         type: 'text', inputMode: 'numeric', maxLength: 4, class: 'inline-num',
-        placeholder: 'otro año',
-        value: (d.value === NEVER || isPreset) ? '' : d.value,
+        placeholder: 'año',
+        value: isBeyond ? '' : d.value,
         oninput: (e) => { e.target.value = e.target.value.replace(/\D/g, ''); d.value = e.target.value; refreshBet(); },
         onchange: () => render()
-      })
+      }),
+      el('button', { class: 'opt never' + (isBeyond ? ' on' : ''), onclick: () => update({ value: BEYOND }) }, BEYOND)
     ];
   }
 
@@ -283,8 +281,8 @@ function renderForm(question) {
 
 async function submitAnswer(question) {
   const d = state.draft;
-  if (question.kind !== 'yesno' && d.value !== NEVER && !/^\d{4}$/.test(String(d.value))) {
-    state.error = 'Pon un año de 4 cifras o elige "nunca".';
+  if (question.kind !== 'yesno' && d.value !== BEYOND && !/^\d{4}$/.test(String(d.value))) {
+    state.error = 'Pon un año de 4 cifras o elige ">2050".';
     render();
     return;
   }
@@ -319,7 +317,7 @@ function renderCard(question) {
   const openForm = () => {
     const last = mine.slice(-1)[0];
     state.draft = {
-      value: last ? last.value : (question.kind === 'yesno' ? 'si' : '2030'),
+      value: last ? last.value : (question.kind === 'yesno' ? 'si' : DEFAULT_YEAR),
       ratio: last ? last.ratio : DEFAULT_AMOUNT,
       comment: '',
       changeMind: ''
