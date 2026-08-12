@@ -25,6 +25,7 @@ const state = {
   tab: 'yesno',
   openForm: null,
   openPropose: false,
+  reactPicker: null,
   draft: null,
   proposal: null,
   error: null,
@@ -216,20 +217,30 @@ function renderAnswers(question) {
 
   return el('div', { class: 'answers' }, latest.map((a) => {
     const rs = state.reactions.filter((r) => r.answer_id === a.id);
+    const pred = question.kind === 'yesno' ? (a.value === 'si' ? 'SÍ' : 'NO') : valueLabel(question, a.value);
     return el('div', { class: 'answer' },
-      el('div', { class: 'answer-head' },
+      el('div', { class: 'aline' },
         el('strong', {}, a.player),
-        el('span', { class: 'bet' }, question.kind === 'yesno' ? betLine(question, a.value, a.ratio) : valueLabel(question, a.value)),
-        question.kind === 'yesno' ? el('span', { class: 'prob' }, implied(a.ratio) + '%') : null),
-      a.comment ? el('p', { class: 'comment' }, a.comment) : null,
-      state.me ? el('div', { class: 'reactions' }, EMOJIS.map((e) => {
-        const who = rs.filter((r) => r.emoji === e);
-        return el('button', {
-          class: 'reaction' + (who.some((r) => r.player === state.me) ? ' on' : ''),
-          title: who.map((r) => r.player).join(', ') || 'Reaccionar',
-          onclick: () => toggleReaction(a.id, e)
-        }, e, who.length ? el('span', {}, who.map((r) => r.player).join(' ')) : null);
-      })) : null);
+        el('span', { class: 'pred' }, pred),
+        question.kind === 'yesno' ? el('span', { class: 'prob' }, implied(a.ratio) + '%') : null,
+        a.comment ? el('span', { class: 'cmt' }, a.comment) : null,
+        el('span', { class: 'reacts' },
+          EMOJIS.filter((e) => rs.some((r) => r.emoji === e)).map((e) => {
+            const who = rs.filter((r) => r.emoji === e);
+            return el('button', {
+              class: 'rchip' + (who.some((r) => r.player === state.me) ? ' on' : ''),
+              title: who.map((r) => r.player).join(', '),
+              onclick: () => toggleReaction(a.id, e)
+            }, e, el('span', {}, who.map((r) => r.player).join(' ')));
+          }),
+          state.me ? el('button', {
+            class: 'radd',
+            onclick: () => { state.reactPicker = state.reactPicker === a.id ? null : a.id; render(); }
+          }, '＋') : null)),
+      state.me && state.reactPicker === a.id
+        ? el('div', { class: 'picker' }, EMOJIS.map((e) =>
+            el('button', { class: 'opt', onclick: () => { state.reactPicker = null; toggleReaction(a.id, e); } }, e)))
+        : null);
   }));
 }
 

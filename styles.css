@@ -186,44 +186,40 @@ h1 {
 .foot { font-size: 10.5px; color: var(--muted); margin: 8px 0 0 78px; }
 
 .answers { border-top: 1px solid var(--rule); padding-top: 12px; }
-.answer { margin-bottom: 14px; }
-.answer-head { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
-.answer-head strong { font-size: 13px; }
+.answer { margin-bottom: 8px; }
 
-.bet {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 11.5px;
-  color: var(--felt);
-  flex: 1 1 200px;
+.aline { display: flex; align-items: baseline; gap: 8px; overflow: hidden; }
+.aline strong { font-size: 13px; flex: 0 0 auto; }
+
+.pred { font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; color: var(--felt); flex: 0 0 auto; }
+.prob { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); flex: 0 0 auto; }
+
+.cmt {
+  font-size: 12.5px;
+  color: var(--muted);
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.prob { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--muted); }
-.comment { font-size: 13.5px; line-height: 1.45; margin: 6px 0 0; }
-.change { font-size: 12.5px; line-height: 1.45; margin: 6px 0 0; color: var(--muted); }
+.reacts { display: flex; gap: 4px; align-items: center; flex: 0 0 auto; margin-left: auto; }
 
-.change span {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 9.5px;
-  text-transform: uppercase;
-  letter-spacing: .1em;
-  display: block;
-  color: var(--never);
-}
-
-.reactions { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
-
-.reaction {
+.rchip, .radd {
   background: none;
   border: 1px solid var(--rule);
   border-radius: 20px;
-  padding: 2px 8px;
+  padding: 1px 7px;
   font-size: 12px;
+  line-height: 1.5;
   cursor: pointer;
   color: var(--muted);
 }
 
-.reaction.on { border-color: var(--ink); color: var(--ink); }
-.reaction span { font-family: 'IBM Plex Mono', monospace; font-size: 9.5px; margin-left: 4px; }
+.rchip.on { border-color: var(--ink); color: var(--ink); }
+.rchip span { font-family: 'IBM Plex Mono', monospace; font-size: 9px; margin-left: 3px; }
+.picker { display: flex; gap: 6px; flex-wrap: wrap; margin: 6px 0 0; }
 
 .form { border-top: 1px solid var(--rule); padding-top: 14px; }
 .options { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }

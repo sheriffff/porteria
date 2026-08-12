@@ -35,7 +35,8 @@ Las escrituras van por funciones `security definer` que verifican el PIN. Las ta
 - Las apuestas son simbólicas, en euros de mentira.
 - Cualquiera puede proponer preguntas; entran con estado `proposed` y las aprueba el administrador.
 - Administrador: el jugador llamado `Sheriff`. Aprueba propuestas. Marcar preguntas como resueltas irá en un panel de admin aparte (pendiente), no como botones en la tarjeta.
-- Reacciones con emoji, mostrando el nombre de quien reacciona.
+- Cada respuesta ocupa una línea: nombre, predicción, % implícito (solo `yesno`), comentario y reacciones.
+- Reacciones con emoji en línea, mostrando el nombre de quien reacciona; un botón `＋` abre el selector de emojis.
 - Los enunciados van al grano: predicen que algo se resuelve o pasa, sin exigir en el criterio que lo haya hecho una IA. Si un humano lo resuelve, cuenta igual.
 - Login por nombre + PIN de 4 cifras, fijado la primera vez. Es un candado de cortesía, no seguridad; el grupo lo sabe.
 
