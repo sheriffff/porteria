@@ -25,16 +25,16 @@ Las escrituras van por funciones `security definer` que verifican el PIN. Las ta
 
 ## Decisiones de producto ya tomadas
 
-- Dos tipos de pregunta: `yesno` con fecha límite fija, y `year` (¿en qué año?) con opciones 2027 / 2028 / 2031 / 2036 / 2046 / nunca.
+- Dos tipos de pregunta: `yesno` con fecha límite fija, y `year` (¿en qué año?). En `year` hay unos años sugeridos como botones (`YEAR_PRESETS`) y un campo para escribir cualquier año, además de "nunca". El goalpost dibuja sobre un eje continuo de años (`AXIS_MIN`–`AXIS_MAX`), con "nunca" al extremo.
 - Cada respuesta lleva: predicción, apuesta, comentario y "¿qué te haría cambiar de opinión?".
-- La apuesta se muestra siempre como frase completa ("Pongo 10€ a que pasa antes de que acabe 2031, contra 1€ de quien diga que no"), nunca como notación de cuotas. El deslizador recorre `RATIOS`, de 1:20 a 100:1. La probabilidad implícita se muestra en pequeño.
+- La apuesta se muestra siempre como frase completa ("Pongo 10€ a que pasa antes de que acabe 2031, contra 1€ de quien diga que no"), nunca como notación de cuotas. El importe se elige con botones (`AMOUNTS`: 1, 2, 5, 10€) o escribiendo una cantidad; siempre se apuesta contra 1€. La columna `ratio` guarda ese importe. La probabilidad implícita se muestra en pequeño.
 - Se puede responder muchas veces. Cada respuesta es una fila nueva; nunca se sobrescribe. La visualización "goalpost" dibuja la secuencia de respuestas de cada jugador sobre el eje de años, con el último punto relleno.
 - Las respuestas de los demás son siempre visibles antes de responder. Es deliberado.
 - Las apuestas son simbólicas, en euros de mentira.
 - Cualquiera puede proponer preguntas; entran con estado `proposed` y las aprueba el administrador.
-- Administrador: el jugador llamado `Sheriff`. Aprueba propuestas y marca preguntas como resueltas.
-- Botón "no es evaluable" por pregunta, con recuento visible. Es una válvula de escape legítima para las objeciones sobre el criterio de resolución.
+- Administrador: el jugador llamado `Sheriff`. Aprueba propuestas. Marcar preguntas como resueltas irá en un panel de admin aparte (pendiente), no como botones en la tarjeta.
 - Reacciones con emoji, mostrando el nombre de quien reacciona.
+- Los enunciados van al grano: predicen que algo se resuelve o pasa, sin exigir en el criterio que lo haya hecho una IA. Si un humano lo resuelve, cuenta igual.
 - Login por nombre + PIN de 4 cifras, fijado la primera vez. Es un candado de cortesía, no seguridad; el grupo lo sabe.
 
 ## Pendiente

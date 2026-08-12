@@ -24,7 +24,7 @@ create table answers (
   question_id uuid not null references questions(id) on delete cascade,
   player text not null references players(name),
   value text not null,
-  ratio int not null check (ratio between 0 and 12),
+  ratio int not null check (ratio >= 1),
   comment text default '',
   change_mind text default '',
   created_at timestamptz not null default now()
@@ -145,7 +145,13 @@ insert into players (name) values ('Jorge'), ('Zango'), ('Sheriff'), ('Pablo');
 
 insert into questions (id, section, kind, text, criterion, deadline, status) values
 (gen_random_uuid(), 'Matemáticas', 'year',
- 'Un problema abierto de la lista de Erdős se cierra con una contribución de IA reconocida por los mantenedores de la lista.',
+ 'La Hipótesis de Riemann queda demostrada.',
+ 'Demostración aceptada por la comunidad matemática: publicada en revista revisada por pares o verificada formalmente.', null, 'active'),
+(gen_random_uuid(), 'Matemáticas', 'year',
+ 'Se resuelve uno de los problemas del milenio del Clay Institute.',
+ 'El Clay Mathematics Institute reconoce la resolución en su web oficial.', null, 'active'),
+(gen_random_uuid(), 'Matemáticas', 'year',
+ 'Se cierra un problema abierto de la lista de Erdős.',
  'Lo declaran los mantenedores de erdosproblems.com en la ficha del problema.', null, 'active'),
 (gen_random_uuid(), 'Programación', 'year',
  'Un agente cierra un pull request no trivial en un repositorio top-1000 de GitHub sin que ningún humano revise el código.',
@@ -154,21 +160,13 @@ insert into questions (id, section, kind, text, criterion, deadline, status) val
  'Una empresa del S&P 500 anuncia despidos citando la IA explícitamente en la nota oficial.',
  'Nota de prensa o 8-K de la propia empresa. No valen filtraciones ni prensa.', null, 'active'),
 (gen_random_uuid(), 'Ciencia', 'year',
- 'La FDA o la EMA aprueban un fármaco cuya molécula fue diseñada por IA.',
- 'Aprobación publicada en el registro oficial, con la molécula atribuida a diseño computacional generativo.', null, 'active'),
+ 'Se aprueba un tratamiento que frena o revierte el Alzheimer.',
+ 'Aprobación de la FDA o la EMA en su registro oficial.', null, 'active'),
+(gen_random_uuid(), 'Ciencia', 'year',
+ 'Se aprueba una vacuna contra algún tipo de cáncer.',
+ 'Aprobación de la FDA o la EMA en su registro oficial.', null, 'active'),
 (gen_random_uuid(), 'Cotidianas', 'yesno',
  'Hay robotaxis sin conductor operando comercialmente en alguna ciudad española.',
  'Servicio abierto al público, sin persona de seguridad a bordo, cobrando por el trayecto.', '31/12/2027', 'active');
-
-insert into questions (id, section, kind, text, criterion, deadline, status) values
-(gen_random_uuid(), 'Matemáticas', 'year',
- 'La Hipótesis de Riemann queda demostrada con una contribución de IA reconocida por los autores.',
- 'Demostración publicada en revista revisada por pares o verificada en Lean/Coq, con la aportación de la IA reconocida en el propio artículo.', null, 'active'),
-(gen_random_uuid(), 'Matemáticas', 'year',
- 'Uno de los problemas del milenio del Clay Institute se resuelve con una demostración generada por IA.',
- 'El Clay Mathematics Institute reconoce la resolución en su web oficial y señala la aportación de la IA.', null, 'active'),
-(gen_random_uuid(), 'Ciencia', 'year',
- 'Se aprueba un tratamiento que frena el avance del Alzheimer con la diana o la molécula descubiertas por IA.',
- 'Aprobación de la FDA o la EMA en su registro oficial, con el hallazgo atribuido a un método de IA en la ficha o publicación asociada.', null, 'active');
 
 alter publication supabase_realtime add table questions, answers, reactions, flags;

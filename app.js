@@ -5,13 +5,15 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const YEARS = [2027, 2028, 2031, 2036, 2046];
 const NEVER = 'nunca';
-const SLOTS = [...YEARS, NEVER];
+const YEAR_PRESETS = [2027, 2030, 2035, 2040];
+const AXIS_MIN = 2026;
+const AXIS_MAX = 2046;
+const AXIS_TICKS = [2026, 2031, 2036, 2041, 2046, NEVER];
+const AMOUNTS = [1, 2, 5, 10];
+const DEFAULT_AMOUNT = 1;
 const SECTIONS = ['Matemáticas', 'Programación', 'Economía', 'Ciencia', 'Cotidianas'];
 const EMOJIS = ['👍', '😂', '🤔', '🔥', '🙄'];
-const RATIOS = [[1,20],[1,10],[1,5],[1,3],[1,2],[1,1],[2,1],[3,1],[5,1],[10,1],[20,1],[50,1],[100,1]];
-const EVEN = 5;
 
 const state = {
   players: [],
@@ -52,22 +54,23 @@ const el = (tag, attrs = {}, ...kids) => {
 };
 
 const uid = () => crypto.randomUUID();
-const slotOf = (v) => (v === NEVER ? SLOTS.length - 1 : YEARS.indexOf(Number(v)));
-const pct = (i) => (i / (SLOTS.length - 1)) * 100;
+const yearPct = (v) => v === NEVER
+  ? 100
+  : ((Math.max(AXIS_MIN, Math.min(AXIS_MAX, Number(v))) - AXIS_MIN) / (AXIS_MAX - AXIS_MIN)) * 88;
 const shortDate = (iso) => new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: '2-digit' });
-const implied = (r) => Math.round((RATIOS[r][0] / (RATIOS[r][0] + RATIOS[r][1])) * 100);
+const implied = (amount) => Math.round((amount / (amount + 1)) * 100);
 
-function betLine(question, value, ratio) {
-  const [mine, yours] = RATIOS[ratio];
+function betLine(question, value, amount) {
+  const n = amount || 1;
   if (question.kind === 'yesno') {
     const side = value === 'si' ? 'que SÍ' : 'que NO';
     const other = value === 'si' ? 'que no' : 'que sí';
-    return `Pongo ${mine}€ a ${side} antes del ${question.deadline}, contra ${yours}€ de quien diga ${other}.`;
+    return `Pongo ${n}€ a ${side} antes del ${question.deadline}, contra 1€ de quien diga ${other}.`;
   }
   if (value === NEVER) {
-    return `Pongo ${mine}€ a que no pasa antes de ${YEARS[YEARS.length - 1]}, contra ${yours}€ de quien diga que sí.`;
+    return `Pongo ${n}€ a que no pasa nunca, contra 1€ de quien diga que sí.`;
   }
-  return `Pongo ${mine}€ a que pasa antes de que acabe ${value}, contra ${yours}€ de quien diga que no.`;
+  return `Pongo ${n}€ a que pasa antes de que acabe ${value}, contra 1€ de quien diga que no.`;
 }
 
 const session = {
@@ -154,17 +157,17 @@ function renderGoalpost(question) {
 
   return el('div', { class: 'goalpost' },
     el('div', { class: 'axis' },
-      SLOTS.map((s, i) => el('span', {
-        class: 'tick' + (s === NEVER ? ' never' : ''),
-        style: { left: pct(i) + '%' }
-      }, s))),
+      AXIS_TICKS.map((t) => el('span', {
+        class: 'tick' + (t === NEVER ? ' never' : ''),
+        style: { left: yearPct(t) + '%' }
+      }, t))),
     rows.map((r) => el('div', { class: 'lane' },
       el('span', { class: 'who' }, r.name),
       el('div', { class: 'track' },
         el('div', { class: 'rail' }),
         r.list.flatMap((a, i) => {
-          const x = pct(slotOf(a.value));
-          const prev = i > 0 ? pct(slotOf(r.list[i - 1].value)) : null;
+          const x = yearPct(a.value);
+          const prev = i > 0 ? yearPct(r.list[i - 1].value) : null;
           return [
             prev !== null ? el('div', {
               class: 'segment',
@@ -221,23 +224,47 @@ function renderAnswers(question) {
 function renderForm(question) {
   const d = state.draft;
   const update = (patch) => { Object.assign(d, patch); render(); };
+  const betNode = el('p', { class: 'bet-line' }, betLine(question, d.value, d.ratio));
+  const refreshBet = () => { betNode.textContent = betLine(question, d.value, d.ratio); };
 
-  const valueOptions = question.kind === 'yesno'
-    ? [['si', 'Sí'], ['no', 'No']].map(([v, label]) =>
-        el('button', { class: 'opt' + (d.value === v ? ' on' : ''), onclick: () => update({ value: v }) }, label))
-    : SLOTS.map((s) => el('button', {
-        class: 'opt' + (String(d.value) === String(s) ? ' on' : '') + (s === NEVER ? ' never' : ''),
-        onclick: () => update({ value: String(s) })
-      }, s));
+  let valueOptions;
+  if (question.kind === 'yesno') {
+    valueOptions = [['si', 'Sí'], ['no', 'No']].map(([v, label]) =>
+      el('button', { class: 'opt' + (d.value === v ? ' on' : ''), onclick: () => update({ value: v }) }, label));
+  } else {
+    const isPreset = YEAR_PRESETS.includes(Number(d.value));
+    valueOptions = [
+      ...YEAR_PRESETS.map((y) =>
+        el('button', { class: 'opt' + (String(d.value) === String(y) ? ' on' : ''), onclick: () => update({ value: String(y) }) }, y)),
+      el('button', { class: 'opt never' + (d.value === NEVER ? ' on' : ''), onclick: () => update({ value: NEVER }) }, 'nunca'),
+      el('input', {
+        type: 'text', inputMode: 'numeric', maxLength: 4, class: 'inline-num',
+        placeholder: 'otro año',
+        value: (d.value === NEVER || isPreset) ? '' : d.value,
+        oninput: (e) => { e.target.value = e.target.value.replace(/\D/g, ''); d.value = e.target.value; refreshBet(); },
+        onchange: () => render()
+      })
+    ];
+  }
+
+  const amountOptions = [
+    ...AMOUNTS.map((n) =>
+      el('button', { class: 'opt' + (Number(d.ratio) === n ? ' on' : ''), onclick: () => update({ ratio: n }) }, n + '€')),
+    el('input', {
+      type: 'text', inputMode: 'numeric', maxLength: 4, class: 'inline-num',
+      placeholder: 'otra',
+      value: AMOUNTS.includes(Number(d.ratio)) ? '' : d.ratio,
+      oninput: (e) => { e.target.value = e.target.value.replace(/\D/g, ''); d.ratio = Number(e.target.value || 0); refreshBet(); },
+      onchange: () => render()
+    })
+  ];
 
   return el('div', { class: 'form' },
+    el('label', { class: 'label' }, question.kind === 'yesno' ? 'Tu predicción' : '¿En qué año?'),
     el('div', { class: 'options' }, valueOptions),
-    el('label', { class: 'label' }, 'Tu apuesta'),
-    el('input', {
-      type: 'range', min: 0, max: RATIOS.length - 1, value: d.ratio, class: 'slider',
-      oninput: (e) => update({ ratio: Number(e.target.value) })
-    }),
-    el('p', { class: 'bet-line' }, betLine(question, d.value, d.ratio)),
+    el('label', { class: 'label' }, 'Cuánto apuestas (contra 1€)'),
+    el('div', { class: 'options' }, amountOptions),
+    betNode,
     el('label', { class: 'label' }, 'Comentario'),
     el('textarea', {
       rows: 2, value: d.comment, placeholder: 'Por qué crees eso',
@@ -256,13 +283,19 @@ function renderForm(question) {
 
 async function submitAnswer(question) {
   const d = state.draft;
+  if (question.kind !== 'yesno' && d.value !== NEVER && !/^\d{4}$/.test(String(d.value))) {
+    state.error = 'Pon un año de 4 cifras o elige "nunca".';
+    render();
+    return;
+  }
+  const amount = Math.max(1, Math.floor(Number(d.ratio) || 0));
   state.busy = true;
   render();
   const ok = await call('submit_answer', {
     p_id: uid(),
     p_question_id: question.id,
     p_value: String(d.value),
-    p_ratio: d.ratio,
+    p_ratio: amount,
     p_comment: d.comment.trim(),
     p_change_mind: d.changeMind.trim()
   });
@@ -274,28 +307,20 @@ async function submitAnswer(question) {
   await loadAll();
 }
 
-async function toggleFlag(question) {
-  const mine = state.flags.some((f) => f.question_id === question.id && f.player === state.me);
-  await call('toggle_flag', { p_question_id: question.id, p_remove: mine });
-  await loadAll();
-}
-
 async function setStatus(question, status, resolution) {
   await call('set_question_status', { p_question_id: question.id, p_status: status, p_resolution: resolution || null });
   await loadAll();
 }
 
 function renderCard(question) {
-  const flags = state.flags.filter((f) => f.question_id === question.id);
-  const flagged = flags.some((f) => f.player === state.me);
   const mine = state.me ? historyOf(question.id, state.me) : [];
   const isAdmin = state.me === 'Sheriff';
 
   const openForm = () => {
     const last = mine.slice(-1)[0];
     state.draft = {
-      value: last ? last.value : (question.kind === 'yesno' ? 'si' : String(YEARS[1])),
-      ratio: last ? last.ratio : EVEN,
+      value: last ? last.value : (question.kind === 'yesno' ? 'si' : '2030'),
+      ratio: last ? last.ratio : DEFAULT_AMOUNT,
       comment: '',
       changeMind: ''
     };
@@ -319,24 +344,9 @@ function renderCard(question) {
           state.me && question.status !== 'resolved'
             ? el('button', { class: 'btn', onclick: openForm }, mine.length ? 'Cambiar mi respuesta' : 'Responder')
             : null,
-          state.me && question.status !== 'resolved'
-            ? el('button', {
-                class: 'btn ghost' + (flagged ? ' on' : ''),
-                onclick: () => toggleFlag(question)
-              }, 'No es evaluable' + (flags.length ? ` (${flags.length})` : ''))
-            : null,
           isAdmin && question.status === 'proposed'
             ? el('button', { class: 'btn ghost', onclick: () => setStatus(question, 'active') }, 'Aprobar')
-            : null,
-          isAdmin && question.status === 'active'
-            ? el('button', { class: 'btn ghost', onclick: () => setStatus(question, 'resolved', 'sí') }, 'Resolver: pasó')
-            : null,
-          isAdmin && question.status === 'active'
-            ? el('button', { class: 'btn ghost', onclick: () => setStatus(question, 'resolved', 'no') }, 'Resolver: no pasó')
-            : null),
-    flags.length
-      ? el('p', { class: 'flags' }, 'Marcada como no evaluable por ' + flags.map((f) => f.player).join(', ') + '.')
-      : null
+            : null)
   );
 }
 

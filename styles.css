@@ -244,6 +244,15 @@ h1 {
 .opt.never { color: var(--never); }
 .opt.on.never { background: var(--never); color: #fff; border-color: var(--never); }
 
+.inline-num {
+  width: 96px;
+  margin: 0;
+  padding: 7px 10px;
+  text-align: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+}
+
 .label {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 10px;
