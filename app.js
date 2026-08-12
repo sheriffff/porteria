@@ -488,7 +488,7 @@ function render() {
         class: state.filter === s ? 'on' : '',
         onclick: () => { state.filter = s; render(); }
       }, s))),
-    state.questions
+    ...state.questions
       .filter((q) => state.filter === 'todas' || q.section === state.filter)
       .map(renderCard),
     renderPropose()

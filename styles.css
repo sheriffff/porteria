@@ -55,7 +55,7 @@ h1 {
   font-size: 12px;
 }
 
-.filters { display: flex; gap: 6px; overflow-x: auto; padding: 14px 0; }
+.filters { display: flex; flex-wrap: wrap; gap: 6px; padding: 14px 0; }
 
 .filters button {
   flex: 0 0 auto;
