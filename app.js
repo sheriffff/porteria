@@ -385,8 +385,6 @@ function renderPropose() {
   const update = (patch) => { Object.assign(p, patch); render(); };
 
   return el('div', { class: 'form' },
-    el('div', { class: 'options' }, SECTIONS.map((s) =>
-      el('button', { class: 'opt' + (p.section === s ? ' on' : ''), onclick: () => update({ section: s }) }, s))),
     el('div', { class: 'options' },
       el('button', { class: 'opt' + (p.kind === 'year' ? ' on' : ''), onclick: () => update({ kind: 'year' }) }, '¿En qué año?'),
       el('button', { class: 'opt' + (p.kind === 'gap' ? ' on' : ''), onclick: () => update({ kind: 'gap' }) }, '¿Cuántos años?'),
@@ -399,12 +397,6 @@ function renderPropose() {
       rows: 2, value: p.text, placeholder: 'Algo que ocurra o no ocurra, sin adjetivos',
       oninput: (e) => { p.text = e.target.value; }
     }),
-    el('label', { class: 'label' }, 'Cómo se resuelve'),
-    el('textarea', {
-      rows: 2, value: p.criterion,
-      placeholder: 'Quién lo declara y con qué evidencia. Si no cabe en una frase, la pregunta no sirve.',
-      oninput: (e) => { p.criterion = e.target.value; }
-    }),
     el('div', { class: 'actions' },
       el('button', { class: 'btn', disabled: state.busy, onclick: submitProposal }, 'Proponer'),
       el('button', { class: 'btn ghost', onclick: () => { state.openPropose = false; state.proposal = null; render(); } }, 'Cancelar'))
@@ -413,7 +405,7 @@ function renderPropose() {
 
 async function submitProposal() {
   const p = state.proposal;
-  if (!p.text.trim() || !p.criterion.trim()) return;
+  if (!p.text.trim()) return;
   state.busy = true;
   render();
   const ok = await call('propose_question', {
@@ -421,7 +413,7 @@ async function submitProposal() {
     p_section: p.section,
     p_kind: p.kind,
     p_text: p.text.trim(),
-    p_criterion: p.criterion.trim(),
+    p_criterion: '',
     p_deadline: p.kind === 'yesno' ? p.deadline.trim() : null
   });
   state.busy = false;
