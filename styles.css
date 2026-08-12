@@ -55,6 +55,28 @@ h1 {
   font-size: 12px;
 }
 
+.adminbar { margin-top: 10px; }
+
+.admin {
+  border: 1px dashed var(--rule);
+  border-radius: 3px;
+  padding: 12px 14px;
+  margin-top: 10px;
+}
+
+.admin .label { margin-bottom: 10px; }
+
+.prop {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-top: 1px solid var(--rule);
+}
+
+.prop-text { font-size: 13.5px; line-height: 1.35; }
+
 .filters { display: flex; flex-wrap: wrap; gap: 6px; padding: 14px 0; }
 
 .filters button {

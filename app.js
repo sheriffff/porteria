@@ -25,6 +25,7 @@ const state = {
   tab: 'yesno',
   openForm: null,
   openPropose: false,
+  openAdmin: false,
   reactPicker: null,
   draft: null,
   proposal: null,
@@ -335,7 +336,6 @@ async function setStatus(question, status, resolution) {
 
 function renderCard(question) {
   const mine = state.me ? historyOf(question.id, state.me) : [];
-  const isAdmin = state.me === 'Sheriff';
 
   const openForm = () => {
     const last = mine.slice(-1)[0];
@@ -362,9 +362,6 @@ function renderCard(question) {
       : el('div', { class: 'actions' },
           state.me && question.status !== 'resolved'
             ? el('button', { class: 'btn', onclick: openForm }, mine.length ? 'Responder de nuevo' : 'Responder')
-            : null,
-          isAdmin && question.status === 'proposed'
-            ? el('button', { class: 'btn ghost', onclick: () => setStatus(question, 'active') }, 'Aprobar')
             : null)
   );
 }
@@ -494,6 +491,9 @@ function render() {
     return;
   }
 
+  const isAdmin = state.me === 'Sheriff';
+  const pending = state.questions.filter((q) => q.status === 'proposed');
+
   app.append(
     el('div', { class: 'bar' },
       el('span', {}, 'Entras como ', el('strong', {}, state.me)),
@@ -501,12 +501,29 @@ function render() {
         class: 'btn ghost',
         onclick: () => { session.clear(); state.me = null; state.loginName = null; render(); }
       }, 'Salir')),
+    isAdmin ? el('div', { class: 'adminbar' },
+      el('button', {
+        class: 'btn ghost' + (state.openAdmin ? ' on' : ''),
+        onclick: () => { state.openAdmin = !state.openAdmin; render(); }
+      }, `Propuestas (${pending.length})`)) : null,
+    isAdmin && state.openAdmin ? renderAdmin(pending) : null,
     el('div', { class: 'filters' }, TABS.map((t) => el('button', {
       class: state.tab === t.key ? 'on' : '',
       onclick: () => { state.tab = t.key; render(); }
     }, t.label))),
-    ...state.questions.filter((q) => inTab(state.tab, q)).map(renderCard),
+    ...state.questions.filter((q) => q.status !== 'proposed' && inTab(state.tab, q)).map(renderCard),
     renderPropose()
+  );
+}
+
+function renderAdmin(pending) {
+  return el('div', { class: 'admin' },
+    el('span', { class: 'label' }, 'Propuestas pendientes'),
+    pending.length
+      ? pending.map((q) => el('div', { class: 'prop' },
+          el('span', { class: 'prop-text' }, q.text),
+          el('button', { class: 'btn ghost', onclick: () => setStatus(q, 'active') }, 'Aprobar')))
+      : el('p', { class: 'note' }, 'No hay nada que aprobar.')
   );
 }
 

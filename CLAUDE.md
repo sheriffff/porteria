@@ -34,7 +34,7 @@ Las escrituras van por funciones `security definer` que verifican el PIN. Las ta
 - Las respuestas de los demás son siempre visibles antes de responder. Es deliberado.
 - Las apuestas son simbólicas, en euros de mentira.
 - Cualquiera puede proponer preguntas; entran con estado `proposed` y las aprueba el administrador.
-- Administrador: el jugador llamado `Sheriff`. Aprueba propuestas. Marcar preguntas como resueltas irá en un panel de admin aparte (pendiente), no como botones en la tarjeta.
+- Administrador: el jugador llamado `Sheriff`. Tiene un panel de admin (solo visible para él) que lista las propuestas pendientes y las aprueba. Las propuestas (`status = 'proposed'`) no salen en la lista normal, solo en el panel. Resolver preguntas queda pendiente para ese mismo panel.
 - Cada respuesta ocupa una línea: nombre, predicción, % implícito (solo `yesno`), comentario y reacciones.
 - Reacciones con emoji en línea, mostrando el nombre de quien reacciona; un botón `＋` abre el selector de emojis.
 - Los enunciados van al grano: predicen que algo se resuelve o pasa, sin exigir en el criterio que lo haya hecho una IA. Si un humano lo resuelve, cuenta igual.
