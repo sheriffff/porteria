@@ -222,9 +222,6 @@ function renderAnswers(question) {
         el('span', { class: 'bet' }, question.kind === 'yesno' ? betLine(question, a.value, a.ratio) : valueLabel(question, a.value)),
         question.kind === 'yesno' ? el('span', { class: 'prob' }, implied(a.ratio) + '%') : null),
       a.comment ? el('p', { class: 'comment' }, a.comment) : null,
-      a.change_mind
-        ? el('p', { class: 'change' }, el('span', {}, 'Cambiaría de opinión si'), ' ' + a.change_mind)
-        : null,
       state.me ? el('div', { class: 'reactions' }, EMOJIS.map((e) => {
         const who = rs.filter((r) => r.emoji === e);
         return el('button', {
@@ -284,11 +281,6 @@ function renderForm(question) {
     el('textarea', {
       rows: 2, value: d.comment, placeholder: 'Por qué crees eso',
       oninput: (e) => { d.comment = e.target.value; }
-    }),
-    el('label', { class: 'label' }, '¿Qué te haría cambiar de opinión?'),
-    el('textarea', {
-      rows: 2, value: d.changeMind, placeholder: 'Un hecho concreto que, si ocurre, te movería',
-      oninput: (e) => { d.changeMind = e.target.value; }
     }),
     el('div', { class: 'actions' },
       el('button', { class: 'btn', disabled: state.busy, onclick: () => submitAnswer(question) }, 'Guardar respuesta'),
