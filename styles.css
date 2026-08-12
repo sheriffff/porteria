@@ -77,6 +77,20 @@ h1 {
 
 .prop-text { font-size: 13.5px; line-height: 1.35; }
 
+.baractions { display: flex; gap: 8px; }
+
+.seemore {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  cursor: pointer;
+  padding: 4px 0 10px;
+}
+
 .filters { display: flex; flex-wrap: wrap; gap: 6px; padding: 14px 0; }
 
 .filters button {

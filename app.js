@@ -27,6 +27,7 @@ const state = {
   openPropose: false,
   openAdmin: false,
   reactPicker: null,
+  details: {},
   draft: null,
   proposal: null,
   error: null,
@@ -336,6 +337,8 @@ async function setStatus(question, status, resolution) {
 
 function renderCard(question) {
   const mine = state.me ? historyOf(question.id, state.me) : [];
+  const answered = state.players.map((p) => historyOf(question.id, p.name).slice(-1)[0]).filter(Boolean);
+  const open = !!state.details[question.id];
 
   const openForm = () => {
     const last = mine.slice(-1)[0];
@@ -356,7 +359,13 @@ function renderCard(question) {
       question.status === 'resolved' ? el('span', { class: 'stamp done' }, 'resuelta: ' + question.resolution) : null),
     el('h2', {}, question.text),
     renderGoalpost(question),
-    renderAnswers(question),
+    answered.length
+      ? el('button', {
+          class: 'seemore',
+          onclick: () => { state.details[question.id] = !open; render(); }
+        }, open ? 'Ocultar detalle' : `Ver detalle · ${answered.length}`)
+      : null,
+    open ? renderAnswers(question) : null,
     question.status !== 'resolved' && state.openForm === question.id
       ? renderForm(question)
       : el('div', { class: 'actions' },
@@ -481,6 +490,19 @@ function renderLogin() {
   );
 }
 
+async function invite(btn) {
+  const url = location.href;
+  if (navigator.share) {
+    try { await navigator.share({ title: 'La portería', text: 'Deja tus predicciones en La portería', url }); } catch (e) {}
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    btn.textContent = '¡Copiado!';
+    setTimeout(() => { btn.textContent = 'Invitar'; }, 2000);
+  } catch (e) {}
+}
+
 function render() {
   app.replaceChildren();
 
@@ -497,10 +519,12 @@ function render() {
   app.append(
     el('div', { class: 'bar' },
       el('span', {}, 'Entras como ', el('strong', {}, state.me)),
-      el('button', {
-        class: 'btn ghost',
-        onclick: () => { session.clear(); state.me = null; state.loginName = null; render(); }
-      }, 'Salir')),
+      el('div', { class: 'baractions' },
+        el('button', { class: 'btn ghost', onclick: (e) => invite(e.currentTarget) }, 'Invitar'),
+        el('button', {
+          class: 'btn ghost',
+          onclick: () => { session.clear(); state.me = null; state.loginName = null; render(); }
+        }, 'Salir'))),
     isAdmin ? el('div', { class: 'adminbar' },
       el('button', {
         class: 'btn ghost' + (state.openAdmin ? ' on' : ''),
