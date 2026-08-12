@@ -25,7 +25,9 @@ Las escrituras van por funciones `security definer` que verifican el PIN. Las ta
 
 ## Decisiones de producto ya tomadas
 
-- Dos tipos de pregunta: `yesno` con fecha límite fija, y `year` (¿en qué año?). En `year` se escribe el año en un campo (por defecto 2026); no se sugieren años. Hay además un botón `>2050` (`BEYOND`) para "tarda mucho / no en este horizonte". El goalpost dibuja sobre un eje continuo de años (`AXIS_MIN`–`AXIS_MAX`), con `>2050` al extremo.
+- Tres tipos de pregunta: `yesno` (con fecha límite), `year` (¿en qué año?) y `gap` (¿cuántos años entre dos hitos?). Los tipos numéricos (`year`, `gap`) se responden con un campo para escribir el número y un botón para el extremo (`>2050` / `>20`); la escala de cada uno vive en `SCALES` y el goalpost los dibuja sobre un eje continuo. El criterio de resolución se guarda pero no se muestra en la tarjeta.
+- Sección `Generalidad`: preguntas sobre si resolver un problema arrastra a los demás — huecos en años entre hitos. Recogen el debate sobre si la superinteligencia generaliza o cada problema necesita su marco.
+- Las preguntas se listan de corrido, en una sola lista, sin filtros ni etiqueta de sección en la tarjeta.
 - Cada respuesta lleva: predicción, apuesta, comentario y "¿qué te haría cambiar de opinión?".
 - La apuesta se muestra siempre como frase completa ("Pongo 10€ a que pasa antes de que acabe 2031, contra 1€ de quien diga que no"), nunca como notación de cuotas. El importe se elige con botones (`AMOUNTS`: 1, 2, 5, 10€) o escribiendo una cantidad; siempre se apuesta contra 1€. La columna `ratio` guarda ese importe. La probabilidad implícita se muestra en pequeño.
 - Se puede responder muchas veces. Cada respuesta es una fila nueva; nunca se sobrescribe. La visualización "goalpost" dibuja la secuencia de respuestas de cada jugador sobre el eje de años, con el último punto relleno.

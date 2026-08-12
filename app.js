@@ -5,14 +5,13 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 
 const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const BEYOND = '>2050';
-const AXIS_MIN = 2026;
-const AXIS_MAX = 2050;
-const AXIS_TICKS = [2026, 2032, 2038, 2044, 2050, BEYOND];
+const SCALES = {
+  year: { min: 2026, max: 2050, ticks: [2026, 2032, 2038, 2044, 2050], beyond: '>2050', fallback: '2026', axisLabel: '¿en qué año?' },
+  gap: { min: 0, max: 20, ticks: [0, 5, 10, 15, 20], beyond: '>20', fallback: '2', axisLabel: '¿cuántos años?' }
+};
 const AMOUNTS = [1, 2, 5, 10];
 const DEFAULT_AMOUNT = 1;
-const DEFAULT_YEAR = '2026';
-const SECTIONS = ['Matemáticas', 'Programación', 'Economía', 'Ciencia', 'Cotidianas'];
+const SECTIONS = ['Matemáticas', 'Programación', 'Economía', 'Ciencia', 'Cotidianas', 'Generalidad'];
 const EMOJIS = ['👍', '😂', '🤔', '🔥', '🙄'];
 
 const state = {
@@ -54,9 +53,10 @@ const el = (tag, attrs = {}, ...kids) => {
 };
 
 const uid = () => crypto.randomUUID();
-const yearPct = (v) => v === BEYOND
+const scaleOf = (question) => SCALES[question.kind];
+const numPct = (scale, v) => v === scale.beyond
   ? 100
-  : ((Math.max(AXIS_MIN, Math.min(AXIS_MAX, Number(v))) - AXIS_MIN) / (AXIS_MAX - AXIS_MIN)) * 88;
+  : ((Math.max(scale.min, Math.min(scale.max, Number(v))) - scale.min) / (scale.max - scale.min)) * 88;
 const shortDate = (iso) => new Date(iso).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: '2-digit' });
 const implied = (amount) => Math.round((amount / (amount + 1)) * 100);
 
@@ -67,7 +67,13 @@ function betLine(question, value, amount) {
     const other = value === 'si' ? 'que no' : 'que sí';
     return `Pongo ${n}€ a ${side} antes del ${question.deadline}, contra 1€ de quien diga ${other}.`;
   }
-  if (value === BEYOND) {
+  if (question.kind === 'gap') {
+    if (value === SCALES.gap.beyond) {
+      return `Pongo ${n}€ a que pasan más de 20 años, contra 1€ de quien diga que menos.`;
+    }
+    return `Pongo ${n}€ a que pasan ${value} años o menos, contra 1€ de quien diga que más.`;
+  }
+  if (value === SCALES.year.beyond) {
     return `Pongo ${n}€ a que no pasa antes de 2050, contra 1€ de quien diga que sí.`;
   }
   return `Pongo ${n}€ a que pasa antes de que acabe ${value}, contra 1€ de quien diga que no.`;
@@ -155,26 +161,28 @@ function renderGoalpost(question) {
     );
   }
 
+  const scale = scaleOf(question);
+  const ticks = [...scale.ticks, scale.beyond];
   return el('div', { class: 'goalpost' },
     el('div', { class: 'axis' },
-      AXIS_TICKS.map((t) => el('span', {
-        class: 'tick' + (t === BEYOND ? ' never' : ''),
-        style: { left: yearPct(t) + '%' }
+      ticks.map((t) => el('span', {
+        class: 'tick' + (t === scale.beyond ? ' never' : ''),
+        style: { left: numPct(scale, t) + '%' }
       }, t))),
     rows.map((r) => el('div', { class: 'lane' },
       el('span', { class: 'who' }, r.name),
       el('div', { class: 'track' },
         el('div', { class: 'rail' }),
         r.list.flatMap((a, i) => {
-          const x = yearPct(a.value);
-          const prev = i > 0 ? yearPct(r.list[i - 1].value) : null;
+          const x = numPct(scale, a.value);
+          const prev = i > 0 ? numPct(scale, r.list[i - 1].value) : null;
           return [
             prev !== null ? el('div', {
               class: 'segment',
               style: { left: Math.min(prev, x) + '%', width: Math.abs(x - prev) + '%' }
             }) : null,
             el('div', {
-              class: 'dot' + (i === r.list.length - 1 ? ' last' : '') + (a.value === BEYOND ? ' never' : ''),
+              class: 'dot' + (i === r.list.length - 1 ? ' last' : '') + (a.value === scale.beyond ? ' never' : ''),
               style: { left: x + '%' },
               title: `${a.value} · ${shortDate(a.created_at)}`
             })
@@ -232,16 +240,17 @@ function renderForm(question) {
     valueOptions = [['si', 'Sí'], ['no', 'No']].map(([v, label]) =>
       el('button', { class: 'opt' + (d.value === v ? ' on' : ''), onclick: () => update({ value: v }) }, label));
   } else {
-    const isBeyond = d.value === BEYOND;
+    const scale = scaleOf(question);
+    const isBeyond = d.value === scale.beyond;
     valueOptions = [
       el('input', {
         type: 'text', inputMode: 'numeric', maxLength: 4, class: 'inline-num',
-        placeholder: 'año',
+        placeholder: question.kind === 'gap' ? 'años' : 'año',
         value: isBeyond ? '' : d.value,
         oninput: (e) => { e.target.value = e.target.value.replace(/\D/g, ''); d.value = e.target.value; refreshBet(); },
         onchange: () => render()
       }),
-      el('button', { class: 'opt never' + (isBeyond ? ' on' : ''), onclick: () => update({ value: BEYOND }) }, BEYOND)
+      el('button', { class: 'opt never' + (isBeyond ? ' on' : ''), onclick: () => update({ value: scale.beyond }) }, scale.beyond)
     ];
   }
 
@@ -258,7 +267,7 @@ function renderForm(question) {
   ];
 
   return el('div', { class: 'form' },
-    el('label', { class: 'label' }, question.kind === 'yesno' ? 'Tu predicción' : '¿En qué año?'),
+    el('label', { class: 'label' }, question.kind === 'yesno' ? 'Tu predicción' : scaleOf(question).axisLabel),
     el('div', { class: 'options' }, valueOptions),
     el('label', { class: 'label' }, 'Cuánto apuestas (contra 1€)'),
     el('div', { class: 'options' }, amountOptions),
@@ -281,10 +290,13 @@ function renderForm(question) {
 
 async function submitAnswer(question) {
   const d = state.draft;
-  if (question.kind !== 'yesno' && d.value !== BEYOND && !/^\d{4}$/.test(String(d.value))) {
-    state.error = 'Pon un año de 4 cifras o elige ">2050".';
-    render();
-    return;
+  if (question.kind !== 'yesno') {
+    const scale = scaleOf(question);
+    if (d.value !== scale.beyond && !/^\d{1,4}$/.test(String(d.value))) {
+      state.error = question.kind === 'gap' ? 'Pon un número de años o elige ">20".' : 'Pon un año de 4 cifras o elige ">2050".';
+      render();
+      return;
+    }
   }
   const amount = Math.max(1, Math.floor(Number(d.ratio) || 0));
   state.busy = true;
@@ -317,7 +329,7 @@ function renderCard(question) {
   const openForm = () => {
     const last = mine.slice(-1)[0];
     state.draft = {
-      value: last ? last.value : (question.kind === 'yesno' ? 'si' : DEFAULT_YEAR),
+      value: last ? last.value : (question.kind === 'yesno' ? 'si' : scaleOf(question).fallback),
       ratio: last ? last.ratio : DEFAULT_AMOUNT,
       comment: '',
       changeMind: ''
@@ -328,12 +340,10 @@ function renderCard(question) {
 
   return el('article', { class: 'card' + (question.status !== 'active' ? ' ' + question.status : '') },
     el('header', { class: 'card-head' },
-      el('span', { class: 'section' }, question.section),
-      el('span', { class: 'deadline' }, question.kind === 'yesno' ? `sí / no · antes del ${question.deadline}` : '¿en qué año?'),
+      el('span', { class: 'deadline' }, question.kind === 'yesno' ? `sí / no · antes del ${question.deadline}` : scaleOf(question).axisLabel),
       question.status === 'proposed' ? el('span', { class: 'stamp' }, 'propuesta') : null,
       question.status === 'resolved' ? el('span', { class: 'stamp done' }, 'resuelta: ' + question.resolution) : null),
     el('h2', {}, question.text),
-    el('p', { class: 'criterion' }, el('span', {}, 'Se resuelve así'), ' ' + question.criterion),
     renderGoalpost(question),
     renderAnswers(question),
     question.status !== 'resolved' && state.openForm === question.id
@@ -368,6 +378,7 @@ function renderPropose() {
       el('button', { class: 'opt' + (p.section === s ? ' on' : ''), onclick: () => update({ section: s }) }, s))),
     el('div', { class: 'options' },
       el('button', { class: 'opt' + (p.kind === 'year' ? ' on' : ''), onclick: () => update({ kind: 'year' }) }, '¿En qué año?'),
+      el('button', { class: 'opt' + (p.kind === 'gap' ? ' on' : ''), onclick: () => update({ kind: 'gap' }) }, '¿Cuántos años?'),
       el('button', { class: 'opt' + (p.kind === 'yesno' ? ' on' : ''), onclick: () => update({ kind: 'yesno' }) }, 'Sí / no con fecha')),
     p.kind === 'yesno'
       ? el('input', { value: p.deadline, placeholder: 'Fecha límite', oninput: (e) => { p.deadline = e.target.value; } })
@@ -487,18 +498,7 @@ function render() {
         class: 'btn ghost',
         onclick: () => { session.clear(); state.me = null; state.loginName = null; render(); }
       }, 'Salir')),
-    el('div', { class: 'filters' },
-      el('button', {
-        class: state.filter === 'todas' ? 'on' : '',
-        onclick: () => { state.filter = 'todas'; render(); }
-      }, 'Todas'),
-      SECTIONS.map((s) => el('button', {
-        class: state.filter === s ? 'on' : '',
-        onclick: () => { state.filter = s; render(); }
-      }, s))),
-    ...state.questions
-      .filter((q) => state.filter === 'todas' || q.section === state.filter)
-      .map(renderCard),
+    ...state.questions.map(renderCard),
     renderPropose()
   );
 }
